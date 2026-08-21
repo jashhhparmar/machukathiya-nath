@@ -1,39 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const path = require('path');
-const multer = require('multer');
 const { requireLogin } = require('../middleware/auth');
 const Family = require('../models/Family');
 const Member = require('../models/Member');
-
-// Multer configuration for profile photo uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, '..', 'public', 'uploads', 'profiles'));
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, 'profile-' + uniqueSuffix + ext);
-  }
-});
-
-const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|webp/;
-  const extOk = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimeOk = allowedTypes.test(file.mimetype.split('/')[1]);
-  if (extOk && mimeOk) {
-    cb(null, true);
-  } else {
-    cb(new Error('Only JPEG, PNG and WebP images are allowed.'), false);
-  }
-};
-
-const upload = multer({
-  storage,
-  fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 } // 5 MB max
-});
+const { upload } = require('../config/cloudinary');
 
 // ─── Helper: check family ownership ──────────────────────────────────────────
 function isOwner(family, userId) {
@@ -108,9 +78,9 @@ router.post('/family/:id/add-member', requireLogin, upload.single('profilePhoto'
       }
     };
 
-    // If a photo was uploaded, set the path
-    if (req.file) {
-      memberData.profilePhoto = '/uploads/profiles/' + req.file.filename;
+    // If a photo was uploaded to Cloudinary, save the URL
+    if (req.file && req.file.path) {
+      memberData.profilePhoto = req.file.path;
     }
 
     const member = new Member(memberData);
@@ -136,7 +106,6 @@ router.get('/family/:id/member/:memberId/edit', requireLogin, async (req, res) =
     const family = await Family.findById(req.params.id).lean();
     if (!family) return res.status(404).send('Family not found');
 
-    // Only the family creator can edit members
     if (!isOwner(family, req.session.userId)) {
       return res.status(403).send('You are not allowed to edit members of this family.');
     }
@@ -144,7 +113,6 @@ router.get('/family/:id/member/:memberId/edit', requireLogin, async (req, res) =
     const member = await Member.findById(req.params.memberId).lean();
     if (!member) return res.status(404).send('Member not found');
 
-    // Ensure the member belongs to this family
     if (member.family.toString() !== family._id.toString()) {
       return res.status(403).send('This member does not belong to this family.');
     }
@@ -209,9 +177,9 @@ router.post('/family/:id/member/:memberId/edit', requireLogin, upload.single('pr
       country: 'India'
     };
 
-    // If a new photo was uploaded, update the path
-    if (req.file) {
-      member.profilePhoto = '/uploads/profiles/' + req.file.filename;
+    // If a new photo was uploaded to Cloudinary, update the URL
+    if (req.file && req.file.path) {
+      member.profilePhoto = req.file.path;
     }
 
     await member.save();
