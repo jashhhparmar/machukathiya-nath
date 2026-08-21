@@ -1,0 +1,77 @@
+<section class="banner-section text-white text-center py-4" style="background: linear-gradient(135deg, #02362c, #046957);">
+    <div class="container py-3">
+        <h1 class="fw-bold mb-0">Vastipatrak &mdash; Family Directory</h1>
+    </div>
+</section>
+
+<div class="container py-5">
+    <!-- Search Bar -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-8">
+            <form action="/vastipatrak" method="GET" class="d-flex bg-white p-2 rounded shadow-sm border">
+                <div class="input-group border-0">
+                    <span class="input-group-text bg-white border-0"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" name="search" class="form-control border-0 shadow-none" placeholder="Search by name, village, gotra, vastipatrak no..." value="<%= locals.search || '' %>">
+                </div>
+                <button type="submit" class="btn text-white px-4 fw-bold" style="background-color: #046957;">Search</button>
+            </form>
+            <% if (locals.search) { %>
+                <div class="text-center mt-2">
+                    <span class="text-muted">Showing results for: <strong><%= search %></strong></span>
+                    <a href="/vastipatrak" class="text-danger ms-2 text-decoration-none small"><i class="fas fa-times-circle"></i> Clear</a>
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Results Count -->
+    <div class="mb-4 text-muted fw-semibold">
+        <% if (locals.families && families.length > 0) { %>
+            Showing <%= families.length %> of <%= locals.totalFamilies || families.length %> families
+        <% } else { %>
+            No families found.
+        <% } %>
+    </div>
+
+    <!-- Family Grid -->
+    <div class="row g-4 mb-5">
+        <% if (locals.families) { %>
+            <% families.forEach(family => { %>
+                <div class="col-lg-4 col-md-6 col-12">
+                    <div class="card h-100 border-0 shadow-sm" style="transition: transform 0.2s ease-in-out; border-radius: 10px;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div class="card-body text-center p-4">
+                            <div class="display-6 fw-bold mb-2" style="color: #046957;"><%= family.vastipatrakNo %></div>
+                            <h5 class="fw-bold text-dark mb-1"><%= family.familyHead %></h5>
+                            <p class="text-muted mb-3"><%= family.village %> &bull; <%= family.gotra || 'N/A' %></p>
+                            
+                            <div class="d-flex justify-content-center gap-3 mb-4 text-secondary small">
+                                <div><i class="fas fa-users me-1"></i> <%= family.totalMembers %> Members</div>
+                            </div>
+                            
+                            <a href="/family/<%= family._id %>" class="btn btn-outline-success w-100 fw-semibold" style="border-color: #046957; color: #046957;">View Family</a>
+                        </div>
+                    </div>
+                </div>
+            <% }) %>
+        <% } %>
+    </div>
+
+    <!-- Pagination -->
+    <% if (locals.totalPages && totalPages > 1) { %>
+        <nav aria-label="Vastipatrak Pagination">
+            <ul class="pagination justify-content-center">
+                <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                    <a class="page-link text-dark" href="/vastipatrak?page=<%= currentPage - 1 %><%= locals.search ? '&search='+search : '' %>">Previous</a>
+                </li>
+                <% for(let i = 1; i <= totalPages; i++) { %>
+                    <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                        <a class="page-link" href="/vastipatrak?page=<%= i %><%= locals.search ? '&search='+search : '' %>" <%= currentPage === i ? 'style="background-color: #046957; border-color: #046957; color: white;"' : 'style="color: #046957;"' %>><%= i %></a>
+                    </li>
+                <% } %>
+                <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                    <a class="page-link text-dark" href="/vastipatrak?page=<%= currentPage + 1 %><%= locals.search ? '&search='+search : '' %>">Next</a>
+                </li>
+            </ul>
+        </nav>
+    <% } %>
+</div>

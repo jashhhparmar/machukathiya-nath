@@ -1,0 +1,193 @@
+<section class="banner-section text-white text-center py-4" style="background: linear-gradient(135deg, #02362c, #046957);">
+  <div class="container py-2">
+    <h2 class="fw-bold mb-1"><i class="fas fa-user-edit me-2"></i>Edit Member Details</h2>
+    <p class="mb-0 opacity-75">Editing: <strong><%= member.fullName %></strong> (Vastipatrak #<%= family.vastipatrakNo %>)</p>
+  </div>
+</section>
+
+<div class="container py-5">
+  <div class="mb-3">
+    <a href="/family/<%= family._id %>" class="text-decoration-none fw-semibold" style="color:#046957;">
+      <i class="fas fa-arrow-left me-1"></i> Back to Family Page
+    </a>
+  </div>
+
+  <div class="card mx-auto shadow border-0" style="max-width:700px; border-radius:12px; overflow:hidden;">
+    <div class="card-header text-white py-3 px-4" style="background-color:#046957;">
+      <h5 class="mb-0 fw-bold"><i class="fas fa-user-edit me-2"></i>Update Member Details</h5>
+    </div>
+    <div class="card-body p-4">
+
+      <% if (locals.errors && errors.length > 0) { %>
+        <% errors.forEach(err => { %>
+          <div class="alert alert-danger py-2 small"><i class="fas fa-exclamation-circle me-1"></i><%= err.msg %></div>
+        <% }) %>
+      <% } %>
+
+      <% if (locals.success) { %>
+        <div class="alert alert-success py-2 small"><i class="fas fa-check-circle me-1"></i><%= success %></div>
+      <% } %>
+
+      <form action="/family/<%= family._id %>/member/<%= member._id %>/edit" method="POST" enctype="multipart/form-data">
+
+        <!-- Profile Photo Upload -->
+        <div class="text-center mb-4">
+          <div class="mb-3">
+            <img id="photoPreview" src="<%= member.profilePhoto || '/images/no-profile.svg' %>" alt="Profile Photo" class="rounded-circle shadow-sm" style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #046957;">
+          </div>
+          <label class="btn btn-sm fw-semibold px-3 py-2" style="background-color: #e8f5f1; color: #046957; border: 1px dashed #046957; border-radius: 8px; cursor: pointer;">
+            <i class="fas fa-camera me-1"></i> Change Photo
+            <input type="file" name="profilePhoto" accept="image/jpeg,image/png,image/webp" style="display: none;" onchange="previewPhoto(this)">
+          </label>
+          <div class="text-muted small mt-1">JPEG, PNG or WebP • Max 5 MB</div>
+        </div>
+
+        <hr class="my-3">
+
+        <!-- Basic Info -->
+        <div class="row g-3 mb-3">
+          <div class="col-12">
+            <label class="form-label fw-semibold text-muted small">Full Name <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light"><i class="fas fa-user text-secondary"></i></span>
+              <input type="text" name="fullName" class="form-control" required value="<%= locals.data && data.fullName ? data.fullName : member.fullName %>">
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold text-muted small">Relation <span class="text-danger">*</span></label>
+            <select name="relation" class="form-select" required>
+              <option value="">Select relation</option>
+              <% ['SELF','WIFE','HUSBAND','SON','DAUGHTER','DAUGHTER IN LAW','SON IN LAW','GRAND SON','GRAND DAUGHTER','FATHER','MOTHER','BROTHER','SISTER','OTHER'].forEach(r => { %>
+                <% const val = (locals.data && data.relation) ? data.relation : member.relation; %>
+                <option value="<%= r %>" <%= val === r ? 'selected' : '' %>><%= r %></option>
+              <% }) %>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-semibold text-muted small">Phone</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light"><i class="fas fa-phone text-secondary"></i></span>
+              <input type="text" name="phone" class="form-control" value="<%= locals.data && data.phone ? data.phone : (member.phone || '') %>">
+            </div>
+          </div>
+        </div>
+
+        <hr class="my-3">
+
+        <!-- Personal Details -->
+        <h6 class="fw-bold mb-3" style="color:#046957;">Personal Details</h6>
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <label class="form-label fw-semibold text-muted small">Gender <span class="text-danger">*</span></label>
+            <% const genderVal = (locals.data && data.gender) ? data.gender : member.gender; %>
+            <select name="gender" class="form-select" required>
+              <option value="">Select</option>
+              <option value="Male" <%= genderVal === 'Male' ? 'selected' : '' %>>Male</option>
+              <option value="Female" <%= genderVal === 'Female' ? 'selected' : '' %>>Female</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold text-muted small">Marital Status <span class="text-danger">*</span></label>
+            <% const msVal = (locals.data && data.maritalStatus) ? data.maritalStatus : member.maritalStatus; %>
+            <select name="maritalStatus" class="form-select" required>
+              <option value="">Select</option>
+              <option value="Single" <%= msVal === 'Single' ? 'selected' : '' %>>Single</option>
+              <option value="Married" <%= msVal === 'Married' ? 'selected' : '' %>>Married</option>
+              <option value="Widowed" <%= msVal === 'Widowed' ? 'selected' : '' %>>Widowed</option>
+              <option value="Divorced" <%= msVal === 'Divorced' ? 'selected' : '' %>>Divorced</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold text-muted small">Blood Group</label>
+            <% const bgVal = (locals.data && data.bloodGroup !== undefined) ? data.bloodGroup : (member.bloodGroup || ''); %>
+            <select name="bloodGroup" class="form-select">
+              <option value="">Select</option>
+              <% ['A+','A-','B+','B-','O+','O-','AB+','AB-'].forEach(bg => { %>
+                <option value="<%= bg %>" <%= bgVal === bg ? 'selected' : '' %>><%= bg %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold text-muted small">Date of Birth</label>
+            <% 
+              let dobVal = '';
+              if (locals.data && data.dateOfBirth) {
+                dobVal = data.dateOfBirth;
+              } else if (member.dateOfBirth) {
+                const d = new Date(member.dateOfBirth);
+                dobVal = d.toISOString().split('T')[0];
+              }
+            %>
+            <input type="date" name="dateOfBirth" class="form-control" value="<%= dobVal %>">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold text-muted small">Membership Type</label>
+            <% const mtVal = (locals.data && data.membershipType) ? data.membershipType : (member.membershipType || 'Non Members'); %>
+            <select name="membershipType" class="form-select">
+              <option value="Non Members" <%= mtVal === 'Non Members' ? 'selected' : '' %>>Non Members</option>
+              <option value="Life Member" <%= mtVal === 'Life Member' ? 'selected' : '' %>>Life Member</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold text-muted small">Occupation</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light"><i class="fas fa-briefcase text-secondary"></i></span>
+              <input type="text" name="occupation" class="form-control" value="<%= locals.data && data.occupation ? data.occupation : (member.occupation || '') %>">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold text-muted small">Education</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light"><i class="fas fa-graduation-cap text-secondary"></i></span>
+              <input type="text" name="education" class="form-control" value="<%= locals.data && data.education ? data.education : (member.education || '') %>">
+            </div>
+          </div>
+        </div>
+
+        <hr class="my-3">
+
+        <!-- Address -->
+        <h6 class="fw-bold mb-3" style="color:#046957;">Address</h6>
+        <div class="row g-3 mb-4">
+          <div class="col-12">
+            <input type="text" name="addressLine1" class="form-control" placeholder="Address Line" value="<%= locals.data && data.addressLine1 ? data.addressLine1 : (member.address && member.address.line1 ? member.address.line1 : '') %>">
+          </div>
+          <div class="col-md-4">
+            <input type="text" name="city" class="form-control" placeholder="City" value="<%= locals.data && data.city ? data.city : (member.address && member.address.city ? member.address.city : '') %>">
+          </div>
+          <div class="col-md-4">
+            <input type="text" name="state" class="form-control" placeholder="State" value="<%= locals.data && data.state ? data.state : (member.address && member.address.state ? member.address.state : '') %>">
+          </div>
+          <div class="col-md-4">
+            <input type="text" name="pincode" class="form-control" placeholder="PIN Code" value="<%= locals.data && data.pincode ? data.pincode : (member.address && member.address.pincode ? member.address.pincode : '') %>">
+          </div>
+        </div>
+
+        <button type="submit" class="btn text-white w-100 py-2 fw-bold" style="background-color:#046957; border-radius:8px; font-size:1.05rem;">
+          <i class="fas fa-save me-2"></i> Save Changes
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function previewPhoto(input) {
+  if (input.files && input.files[0]) {
+    const file = input.files[0];
+    // Validate file size (5 MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image must be less than 5 MB.');
+      input.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('photoPreview').src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+}
+</script>

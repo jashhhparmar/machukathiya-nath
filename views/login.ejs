@@ -1,0 +1,46 @@
+<div class="container py-5">
+    <div class="card mx-auto shadow border-0" style="max-width: 450px; border-radius: 10px; overflow: hidden;">
+        <div class="card-header text-white text-center py-3" style="background-color: #046957;">
+            <h4 class="mb-0 fw-bold"><i class="fas fa-lock me-2"></i> Member Login</h4>
+        </div>
+        <div class="card-body p-4 bg-white">
+            <% if (locals.errors && errors.length > 0) { %>
+                <% errors.forEach(err => { %>
+                    <div class="alert alert-danger py-2"><%= err.msg || err %></div>
+                <% }) %>
+            <% } %>
+            <% if (locals.success) { %>
+                <div class="alert alert-success py-2"><%= success %></div>
+            <% } %>
+
+            <form action="/login" method="POST">
+                <div class="mb-3">
+                    <label class="form-label text-muted fw-semibold">Email Address</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="fas fa-envelope text-secondary"></i></span>
+                        <input type="email" name="email" class="form-control" required placeholder="name@example.com" value="<%= locals.data && data.email ? data.email : '' %>">
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label text-muted fw-semibold">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="fas fa-key text-secondary"></i></span>
+                        <input type="password" name="password" class="form-control" required placeholder="••••••••">
+                    </div>
+                </div>
+                
+                <div class="mb-4 form-check">
+                    <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                    <label class="form-check-label text-muted" for="remember">Remember me</label>
+                </div>
+                
+                <button type="submit" class="btn text-white w-100 py-2 fw-bold" style="background-color: #046957;">Login</button>
+            </form>
+            
+            <div class="text-center mt-4">
+                <a href="/signup" class="text-decoration-none" style="color: #046957;">Don't have an account? Sign up here</a>
+            </div>
+        </div>
+    </div>
+</div>

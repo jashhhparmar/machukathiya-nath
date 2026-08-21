@@ -1,0 +1,187 @@
+<div class="container py-5">
+  <div class="card mx-auto shadow border-0" style="max-width: 700px; border-radius: 12px; overflow: hidden;">
+
+    <!-- Header -->
+    <div class="card-header text-white text-center py-3" style="background-color: #046957;">
+      <h4 class="mb-0 fw-bold"><i class="fas fa-user-plus me-2"></i> Create Account & Register Family</h4>
+      <p class="mb-0 small opacity-75 mt-1">Fill in your details to register in the community directory</p>
+    </div>
+
+    <div class="card-body p-4 bg-white">
+
+      <!-- Errors -->
+      <% if (locals.errors && errors.length > 0) { %>
+        <% errors.forEach(err => { %>
+          <div class="alert alert-danger py-2 small"><i class="fas fa-exclamation-circle me-1"></i><%= err.msg || err %></div>
+        <% }) %>
+      <% } %>
+
+      <form action="/signup" method="POST">
+
+        <!-- Section 1: Account Info -->
+        <div class="mb-4">
+          <div class="d-flex align-items-center mb-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center me-2" style="width:30px;height:30px;background:#046957;">
+              <span class="text-white fw-bold small">1</span>
+            </div>
+            <h6 class="mb-0 fw-bold" style="color:#046957;">Account Information</h6>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label fw-semibold text-muted small">Full Name <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text bg-light"><i class="fas fa-user text-secondary"></i></span>
+                <input type="text" name="fullName" class="form-control" required value="<%= locals.data && data.fullName ? data.fullName : '' %>">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold text-muted small">Email Address <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text bg-light"><i class="fas fa-envelope text-secondary"></i></span>
+                <input type="email" name="email" class="form-control" required value="<%= locals.data && data.email ? data.email : '' %>">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold text-muted small">Phone Number <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text bg-light"><i class="fas fa-phone text-secondary"></i></span>
+                <input type="text" name="phone" class="form-control" required value="<%= locals.data && data.phone ? data.phone : '' %>">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold text-muted small">Password <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text bg-light"><i class="fas fa-lock text-secondary"></i></span>
+                <input type="password" name="password" class="form-control" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold text-muted small">Confirm Password <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text bg-light"><i class="fas fa-check-circle text-secondary"></i></span>
+                <input type="password" name="confirmPassword" class="form-control" required>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="my-3">
+
+        <!-- Section 2: Personal Info -->
+        <div class="mb-4">
+          <div class="d-flex align-items-center mb-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center me-2" style="width:30px;height:30px;background:#046957;">
+              <span class="text-white fw-bold small">2</span>
+            </div>
+            <h6 class="mb-0 fw-bold" style="color:#046957;">Personal Details</h6>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label fw-semibold text-muted small">Gender <span class="text-danger">*</span></label>
+              <select name="gender" class="form-select" required>
+                <option value="">Select gender</option>
+                <option value="Male" <%= locals.data && data.gender === 'Male' ? 'selected' : '' %>>Male</option>
+                <option value="Female" <%= locals.data && data.gender === 'Female' ? 'selected' : '' %>>Female</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold text-muted small">Marital Status <span class="text-danger">*</span></label>
+              <select name="maritalStatus" class="form-select" required>
+                <option value="">Select status</option>
+                <option value="Single" <%= locals.data && data.maritalStatus === 'Single' ? 'selected' : '' %>>Single</option>
+                <option value="Married" <%= locals.data && data.maritalStatus === 'Married' ? 'selected' : '' %>>Married</option>
+                <option value="Widowed" <%= locals.data && data.maritalStatus === 'Widowed' ? 'selected' : '' %>>Widowed</option>
+                <option value="Divorced" <%= locals.data && data.maritalStatus === 'Divorced' ? 'selected' : '' %>>Divorced</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold text-muted small">Date of Birth</label>
+              <input type="date" name="dateOfBirth" class="form-control" value="<%= locals.data && data.dateOfBirth ? data.dateOfBirth : '' %>">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold text-muted small">Blood Group</label>
+              <select name="bloodGroup" class="form-select">
+                <option value="">Select blood group</option>
+                <% ['A+','A-','B+','B-','O+','O-','AB+','AB-'].forEach(bg => { %>
+                  <option value="<%= bg %>" <%= locals.data && data.bloodGroup === bg ? 'selected' : '' %>><%= bg %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold text-muted small">Occupation</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light"><i class="fas fa-briefcase text-secondary"></i></span>
+                <input type="text" name="occupation" class="form-control" value="<%= locals.data && data.occupation ? data.occupation : '' %>">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold text-muted small">Education</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light"><i class="fas fa-graduation-cap text-secondary"></i></span>
+                <input type="text" name="education" class="form-control" value="<%= locals.data && data.education ? data.education : '' %>">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="my-3">
+
+        <!-- Section 3: Family Info -->
+        <div class="mb-4">
+          <div class="d-flex align-items-center mb-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center me-2" style="width:30px;height:30px;background:#046957;">
+              <span class="text-white fw-bold small">3</span>
+            </div>
+            <h6 class="mb-0 fw-bold" style="color:#046957;">Family & Address Details</h6>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold text-muted small">Village / City of Origin <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text bg-light"><i class="fas fa-map-marker-alt text-secondary"></i></span>
+                <input type="text" name="village" class="form-control" required value="<%= locals.data && data.village ? data.village : '' %>">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold text-muted small">Mosal</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light"><i class="fas fa-sitemap text-secondary"></i></span>
+                <input type="text" name="mosal" class="form-control" value="<%= locals.data && data.mosal ? data.mosal : '' %>">
+              </div>
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold text-muted small">Address Line</label>
+              <input type="text" name="addressLine1" class="form-control" value="<%= locals.data && data.addressLine1 ? data.addressLine1 : '' %>">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold text-muted small">City</label>
+              <input type="text" name="city" class="form-control" value="<%= locals.data && data.city ? data.city : '' %>">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold text-muted small">State</label>
+              <input type="text" name="state" class="form-control" value="<%= locals.data && data.state ? data.state : '' %>">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold text-muted small">PIN Code</label>
+              <input type="text" name="pincode" class="form-control" value="<%= locals.data && data.pincode ? data.pincode : '' %>">
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn text-white w-100 py-2 fw-bold mt-2" style="background-color: #046957; border-radius: 8px; font-size: 1.05rem;">
+          <i class="fas fa-check-circle me-2"></i> Register & Join Directory
+        </button>
+
+      </form>
+
+      <div class="text-center mt-3">
+        <a href="/login" class="text-decoration-none small" style="color: #046957;">Already have an account? Login here</a>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -1,0 +1,133 @@
+<div class="container py-5">
+
+  <!-- Welcome Header -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <h2 class="fw-bold" style="color: #046957;">Welcome, <%= user.fullName %>! 🙏</h2>
+      <p class="text-muted">You are registered in the <strong>Machhu Kathiya Sai Suthar Gyati</strong> community directory.</p>
+    </div>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="row g-4 mb-5">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #046957 !important;">
+        <div class="card-body d-flex align-items-center ps-4">
+          <div class="rounded-circle p-3 bg-light text-center me-3" style="width:55px;height:55px;">
+            <i class="fas fa-users fs-5" style="color:#046957;"></i>
+          </div>
+          <div>
+            <h3 class="mb-0 fw-bold"><%= locals.totalFamilies || 0 %></h3>
+            <div class="text-muted small text-uppercase fw-semibold">Total Families</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #046957 !important;">
+        <div class="card-body d-flex align-items-center ps-4">
+          <div class="rounded-circle p-3 bg-light text-center me-3" style="width:55px;height:55px;">
+            <i class="fas fa-user fs-5" style="color:#046957;"></i>
+          </div>
+          <div>
+            <h3 class="mb-0 fw-bold"><%= locals.totalMembers || 0 %></h3>
+            <div class="text-muted small text-uppercase fw-semibold">Total Members</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #FDBE70 !important;">
+        <div class="card-body d-flex align-items-center ps-4">
+          <div class="rounded-circle p-3 bg-light text-center me-3" style="width:55px;height:55px;">
+            <i class="fas fa-shield-alt fs-5" style="color:#FDBE70;"></i>
+          </div>
+          <div>
+            <h4 class="mb-0 fw-bold text-capitalize"><%= user.role || 'Member' %></h4>
+            <div class="text-muted small text-uppercase fw-semibold">Your Role</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- My Family Card -->
+  <% if (locals.myFamily) { %>
+  <div class="row mb-5">
+    <div class="col-12">
+      <h5 class="fw-bold mb-3" style="color:#046957;"><i class="fas fa-home me-2"></i>Your Family in the Directory</h5>
+      <div class="card border-0 shadow-sm" style="border-radius:12px; overflow:hidden;">
+        <div class="card-header text-white py-3 px-4" style="background-color:#046957;">
+          <h6 class="mb-0 fw-bold"><i class="fas fa-users me-2"></i>Family Information</h6>
+        </div>
+        <div class="card-body p-4">
+          <div class="row g-3 align-items-center">
+            <div class="col-auto">
+              <div class="rounded-circle d-flex align-items-center justify-content-center border" style="width:70px;height:70px;background:#f8f9fa;">
+                <i class="fas fa-users fa-2x" style="color:#046957;"></i>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="text-muted small fw-bold text-uppercase">Vastipatrak No</div>
+              <h3 class="fw-bold mb-0" style="color:#046957;"><%= myFamily.vastipatrakNo %></h3>
+            </div>
+            <div class="col-md-2">
+              <div class="text-muted small fw-bold text-uppercase">Family Head</div>
+              <h6 class="mb-0 text-dark"><%= myFamily.familyHead %></h6>
+            </div>
+            <div class="col-md-2">
+              <div class="text-muted small fw-bold text-uppercase">Village</div>
+              <h6 class="mb-0 text-dark"><%= myFamily.village %></h6>
+            </div>
+            <div class="col-md-2">
+              <div class="text-muted small fw-bold text-uppercase">Gotra</div>
+              <h6 class="mb-0 text-dark"><%= myFamily.gotra || '—' %></h6>
+            </div>
+            <div class="col-md-2">
+              <div class="text-muted small fw-bold text-uppercase">Members</div>
+              <h6 class="mb-0 text-dark"><%= myFamily.totalMembers %></h6>
+            </div>
+          </div>
+          <div class="mt-3">
+            <a href="/family/<%= myFamily._id %>" class="btn fw-semibold text-white" style="background-color:#046957; border-radius:8px;">
+              <i class="fas fa-eye me-1"></i> View My Family Page
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <% } else { %>
+  <div class="alert alert-warning mb-5">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    Your family was not found in the directory. Please contact the admin.
+  </div>
+  <% } %>
+
+  <!-- Quick Actions -->
+  <div class="row">
+    <div class="col-12">
+      <h5 class="fw-bold mb-3" style="color:#046957;"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+    </div>
+    <div class="col-md-4 mb-3">
+      <a href="/vastipatrak" class="btn w-100 text-white py-3 fw-bold" style="background-color:#046957; border-radius:10px;">
+        <i class="fas fa-book-open d-block fs-4 mb-1"></i> Browse Vastipatrak
+      </a>
+    </div>
+    <div class="col-md-4 mb-3">
+      <% if (locals.myFamily) { %>
+      <a href="/family/<%= myFamily._id %>" class="btn w-100 py-3 fw-bold" style="background-color:#FDBE70; color:#333; border-radius:10px;">
+        <i class="fas fa-users d-block fs-4 mb-1"></i> My Family Page
+      </a>
+      <% } %>
+    </div>
+    <div class="col-md-4 mb-3">
+      <a href="/logout" class="btn btn-outline-danger w-100 py-3 fw-bold" style="border-radius:10px;">
+        <i class="fas fa-sign-out-alt d-block fs-4 mb-1"></i> Logout
+      </a>
+    </div>
+  </div>
+
+</div>

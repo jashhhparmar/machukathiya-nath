@@ -1,0 +1,43 @@
+<header>
+    <!-- Top Bar -->
+    <div class="top-bar text-center text-white py-1" style="background-color: #046957;">
+        <span class="fw-bold" style="letter-spacing: 1px;">Machhu Kathiya Sai Suthar Gyati</span>
+    </div>
+    <!-- Accent Bar -->
+    <div style="height: 4px; background-color: #FDBE70;"></div>
+    
+    <!-- Main Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-success fs-3" href="/" style="color: #046957 !important;">MKSG</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 fw-semibold">
+                    <li class="nav-item">
+                        <a class="nav-link px-3 text-dark" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-3 text-dark" href="/vastipatrak">Vastipatrak</a>
+                    </li>
+                    <% if (locals.user) { %>
+                        <li class="nav-item">
+                            <a class="nav-link px-3 text-dark" href="/dashboard">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3 text-danger" href="/logout">Logout</a>
+                        </li>
+                    <% } else { %>
+                        <li class="nav-item">
+                            <a class="nav-link px-3 text-dark" href="/login">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3 text-white rounded ms-2" href="/signup" style="background-color: #046957;">Sign Up</a>
+                        </li>
+                    <% } %>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>

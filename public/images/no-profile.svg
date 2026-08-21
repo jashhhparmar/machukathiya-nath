@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Background Circle -->
+  <circle cx="100" cy="100" r="100" fill="#CBD5E1"/>
+  
+  <!-- Person Silhouette -->
+  <!-- Head -->
+  <circle cx="100" cy="72" r="38" fill="#FFFFFF"/>
+  
+  <!-- Shoulders & Torso -->
+  <path d="M100 122 C64 122 32 148 24 186 C42 196 69 200 100 200 C131 200 158 196 176 186 C168 148 136 122 100 122 Z" fill="#FFFFFF"/>
+</svg>
