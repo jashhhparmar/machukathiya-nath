@@ -4,6 +4,42 @@ const { requireLogin } = require('../middleware/auth');
 const Family = require('../models/Family');
 const Member = require('../models/Member');
 
+// Helper to escape regex special characters
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Build smart regexes to handle transliteration variations (e.g. Parmar <-> Paramar, Mistry <-> Mistri)
+function getSearchRegexes(term) {
+  const trimmed = term.trim();
+  const regexes = [];
+
+  // Direct exact/partial match
+  regexes.push(new RegExp(escapeRegExp(trimmed), 'i'));
+
+  // Phonetic/spelling variation for Parmar <-> Paramar
+  if (/parmar/i.test(trimmed)) {
+    regexes.push(new RegExp('paramar', 'i'));
+  } else if (/paramar/i.test(trimmed)) {
+    regexes.push(new RegExp('parmar', 'i'));
+  }
+
+  // Mistry <-> Mistri
+  if (/mistry/i.test(trimmed)) {
+    regexes.push(new RegExp('mistri', 'i'));
+  } else if (/mistri/i.test(trimmed)) {
+    regexes.push(new RegExp('mistry', 'i'));
+  }
+
+  // Generic optional vowel insertion between r and m (p[a]?r[a]?m[a]?r)
+  const flexiblePattern = escapeRegExp(trimmed).replace(/r/gi, 'r[a]?');
+  try {
+    regexes.push(new RegExp(flexiblePattern, 'i'));
+  } catch (e) {}
+
+  return regexes;
+}
+
 router.get('/vastipatrak', requireLogin, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -16,29 +52,26 @@ router.get('/vastipatrak', requireLogin, async (req, res) => {
     let matchedMembersCount = 0;
 
     if (search) {
-      const searchRegex = new RegExp(search, 'i');
+      const searchRegexes = getSearchRegexes(search);
       const isNumeric = !isNaN(search) && search !== '';
 
-      // 1. Search across Member collection (fullName, occupation, education, phone, suburb, city, etc.)
-      const memberSearchQuery = {
-        $or: [
-          { fullName: searchRegex },
-          { occupation: searchRegex },
-          { education: searchRegex },
-          { phone: searchRegex },
-          { relation: searchRegex },
-          { membershipType: searchRegex },
-          { bloodGroup: searchRegex },
-          { 'address.line1': searchRegex },
-          { 'address.suburb': searchRegex },
-          { 'address.city': searchRegex },
-          { 'address.state': searchRegex },
-          { 'address.pincode': searchRegex }
-        ]
-      };
+      const memberFields = [
+        'fullName', 'occupation', 'education', 'phone',
+        'relation', 'membershipType', 'bloodGroup',
+        'address.line1', 'address.suburb', 'address.city',
+        'address.state', 'address.pincode'
+      ];
+
+      // Build member search conditions for all regex variations
+      const memberOrConditions = [];
+      searchRegexes.forEach(regex => {
+        memberFields.forEach(field => {
+          memberOrConditions.push({ [field]: regex });
+        });
+      });
 
       // Find matching members and populate family details
-      const rawMatchedMembers = await Member.find(memberSearchQuery)
+      const rawMatchedMembers = await Member.find({ $or: memberOrConditions })
         .populate('family')
         .lean();
 
@@ -50,13 +83,16 @@ router.get('/vastipatrak', requireLogin, async (req, res) => {
         .filter(m => m.family && m.family._id)
         .map(m => m.family._id);
 
-      // 2. Build family search query (matching family fields OR member's family ID)
+      // Build family search query
       const familyOrConditions = [
-        { familyHead: searchRegex },
-        { village: searchRegex },
-        { mosal: searchRegex },
         { _id: { $in: memberFamilyIds } }
       ];
+
+      searchRegexes.forEach(regex => {
+        familyOrConditions.push({ familyHead: regex });
+        familyOrConditions.push({ village: regex });
+        familyOrConditions.push({ mosal: regex });
+      });
 
       if (isNumeric) {
         familyOrConditions.push({ vastipatrakNo: parseInt(search) });
