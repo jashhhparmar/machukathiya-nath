@@ -45,7 +45,7 @@ router.post('/family/:id/add-member', requireLogin, upload.single('profilePhoto'
       fullName, relation, gender, maritalStatus,
       dateOfBirth, bloodGroup, phone, occupation,
       education, membershipType,
-      addressLine1, city, state, pincode
+      addressLine1, suburb, city, state, pincode
     } = req.body;
 
     if (!fullName || !relation || !gender || !maritalStatus) {
@@ -71,6 +71,7 @@ router.post('/family/:id/add-member', requireLogin, upload.single('profilePhoto'
       membershipType: membershipType || 'Non Members',
       address: {
         line1: addressLine1 || '',
+        suburb: suburb || '',
         city: city || '',
         state: state || '',
         pincode: pincode || '',
@@ -145,7 +146,7 @@ router.post('/family/:id/member/:memberId/edit', requireLogin, upload.single('pr
       fullName, relation, gender, maritalStatus,
       dateOfBirth, bloodGroup, phone, occupation,
       education, membershipType,
-      addressLine1, city, state, pincode
+      addressLine1, suburb, city, state, pincode
     } = req.body;
 
     if (!fullName || !relation || !gender || !maritalStatus) {
@@ -171,6 +172,7 @@ router.post('/family/:id/member/:memberId/edit', requireLogin, upload.single('pr
     member.membershipType = membershipType || 'Non Members';
     member.address = {
       line1: addressLine1 || '',
+      suburb: suburb || '',
       city: city || '',
       state: state || '',
       pincode: pincode || '',

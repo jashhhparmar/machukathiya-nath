@@ -1,7 +1,8 @@
 <header>
     <!-- Top Bar -->
-    <div class="top-bar text-center text-white py-1" style="background-color: #046957;">
-        <span class="fw-bold" style="letter-spacing: 1px;">Machhu Kathiya Sai Suthar Gyati</span>
+    <div class="top-bar text-center text-white py-2 px-3 d-flex align-items-center justify-content-center gap-2" style="background-color: #046957;">
+        <img src="<%= locals.siteLogo || '/images/logo.png' %>" alt="Logo" class="rounded-circle shadow-sm bg-white p-1" style="height: 34px; width: 34px; object-fit: contain;">
+        <span class="fw-bold fs-6" style="letter-spacing: 0.5px;">Machhu Kathiya Sai Suthar Gyati</span>
     </div>
     <!-- Accent Bar -->
     <div style="height: 4px; background-color: #FDBE70;"></div>
@@ -9,12 +10,15 @@
     <!-- Main Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
         <div class="container">
-            <a class="navbar-brand fw-bold text-success fs-3" href="/" style="color: #046957 !important;">MKSSG</a>
+            <a class="navbar-brand fw-bold text-success fs-3 d-flex align-items-center gap-2" href="/" style="color: #046957 !important;">
+                <img src="<%= locals.siteLogo || '/images/logo.png' %>" alt="MKSSG Logo" style="height: 42px; width: 42px; object-fit: contain;">
+                <span>MKSSG</span>
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="mainNav">
-                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 fw-semibold">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 fw-semibold align-items-lg-center">
                     <li class="nav-item">
                         <a class="nav-link px-3 text-dark" href="/">Home</a>
                     </li>
@@ -25,6 +29,11 @@
                         <li class="nav-item">
                             <a class="nav-link px-3 text-dark" href="/dashboard">Dashboard</a>
                         </li>
+                        <% if (user.role === 'admin') { %>
+                            <li class="nav-item">
+                                <a class="nav-link px-3 text-primary fw-bold" href="/admin/logo" title="Developer / Admin Logo Control"><i class="fas fa-cog me-1"></i>Logo Control</a>
+                            </li>
+                        <% } %>
                         <li class="nav-item">
                             <a class="nav-link px-3 text-danger" href="/logout">Logout</a>
                         </li>

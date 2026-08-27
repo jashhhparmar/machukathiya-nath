@@ -33,8 +33,10 @@ app.use(session({
 
 // Res.locals for views
 const User = require('./models/User');
+const Setting = require('./models/Setting');
 app.use(async (req, res, next) => {
   res.locals.user = null;
+  res.locals.siteLogo = '/images/logo.png';
   if (req.session.userId) {
     try {
       const user = await User.findById(req.session.userId).lean();
@@ -42,6 +44,14 @@ app.use(async (req, res, next) => {
     } catch (err) {
       console.error(err);
     }
+  }
+  try {
+    const logoSetting = await Setting.findOne({ key: 'siteLogo' }).lean();
+    if (logoSetting && logoSetting.value) {
+      res.locals.siteLogo = logoSetting.value;
+    }
+  } catch (err) {
+    console.error(err);
   }
   next();
 });
@@ -55,6 +65,7 @@ app.use('/', require('./routes/dashboard'));
 app.use('/', require('./routes/vastipatrak'));
 app.use('/', require('./routes/family'));
 app.use('/', require('./routes/member'));
+app.use('/', require('./routes/admin'));
 
 // 404 Handler
 app.use((req, res) => {

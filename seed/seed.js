@@ -18,6 +18,8 @@ const gotras = ['SALIYANA', 'KASHYAP', 'BHARADWAJ', 'GAUTAM', 'VASISHTHA'];
 const occupations = ['BUSINESS', 'SERVICE', 'DOCTOR', 'ENGINEER', 'TEACHER', 'SHOP OWNER'];
 const surnames = ['Suthar', 'Mistri', 'Panchal', 'Gajjar'];
 
+const suburbs = ['KANDIVALI', 'BORIVALI', 'ANDHERI', 'MALAD', 'GHATKOPAR', 'NAVANGAR', 'STATION ROAD'];
+
 const randomItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 const generateSeedData = async () => {
@@ -72,6 +74,7 @@ const generateSeedData = async () => {
           membershipType: 'Life Member',
           address: {
             line1: '123 Society',
+            suburb: randomItem(suburbs),
             city: randomItem(villages),
             state: 'Gujarat',
             pincode: '380001',

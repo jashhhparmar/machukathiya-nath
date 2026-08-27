@@ -2,7 +2,10 @@
     <div class="container">
         <div class="row">
             <div class="col-md-5 mb-4">
-                <h5 class="fw-bold mb-3" style="color: #FDBE70;">Machhu Kathiya Sai Suthar Gyati</h5>
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <img src="<%= locals.siteLogo || '/images/logo.png' %>" alt="MKSSG Logo" class="rounded-circle bg-white p-1" style="height: 38px; width: 38px; object-fit: contain;">
+                    <h5 class="fw-bold mb-0" style="color: #FDBE70;">Machhu Kathiya Sai Suthar Gyati</h5>
+                </div>
                 <p class="text-white-50">Connecting our community members through a digital vastipatrak portal. Preserving our heritage and staying united.</p>
                 <div class="social-links mt-3">
                     <a href="#" class="text-white me-3 fs-5"><i class="fab fa-facebook-f"></i></a>
@@ -30,7 +33,10 @@
         </div>
         <hr class="border-secondary mt-4 mb-3">
         <div class="text-center text-white-50 small">
-            &copy; 2024 Machhu Kathiya Sai Suthar Gyati. All rights reserved.
+            <div>&copy; <%= new Date().getFullYear() %> Machhu Kathiya Sai Suthar Gyati. All rights reserved.</div>
+            <div class="mt-1 text-white opacity-75 fw-semibold" style="letter-spacing: 0.5px;">
+                Designed & Developed by <span style="color: #FDBE70;">Jash Parmar</span>
+            </div>
         </div>
     </div>
 </footer>

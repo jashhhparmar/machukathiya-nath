@@ -1,0 +1,80 @@
+<section class="banner-section text-white text-center py-4" style="background: linear-gradient(135deg, #02362c, #046957);">
+  <div class="container py-2">
+    <h2 class="fw-bold mb-1"><i class="fas fa-cog me-2"></i>Logo Management (Admin Only)</h2>
+    <p class="mb-0 opacity-75">Change or update the main community logo displayed across the website</p>
+  </div>
+</section>
+
+<div class="container py-5">
+  <div class="mb-3">
+    <a href="/dashboard" class="text-decoration-none fw-semibold" style="color:#046957;">
+      <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+    </a>
+  </div>
+
+  <div class="card mx-auto shadow border-0" style="max-width:650px; border-radius:12px; overflow:hidden;">
+    <div class="card-header text-white py-3 px-4" style="background-color:#046957;">
+      <h5 class="mb-0 fw-bold"><i class="fas fa-image me-2"></i>Update Site Logo</h5>
+    </div>
+    <div class="card-body p-4">
+
+      <% if (locals.success) { %>
+        <div class="alert alert-success py-2 small fw-semibold"><i class="fas fa-check-circle me-1"></i><%= success %></div>
+      <% } %>
+
+      <% if (locals.error) { %>
+        <div class="alert alert-danger py-2 small fw-semibold"><i class="fas fa-exclamation-circle me-1"></i><%= error %></div>
+      <% } %>
+
+      <!-- Current Logo Preview -->
+      <div class="text-center mb-4 p-3 bg-light rounded border">
+        <div class="text-muted small fw-bold text-uppercase mb-2">Current Site Logo</div>
+        <div class="p-2 d-inline-block bg-white rounded shadow-sm border">
+          <img id="currentLogoPreview" src="<%= currentLogo %>" alt="Current Logo" style="max-height: 120px; max-width: 250px; object-fit: contain;">
+        </div>
+      </div>
+
+      <form action="/admin/logo" method="POST" enctype="multipart/form-data">
+        
+        <!-- File Upload Option -->
+        <div class="mb-4">
+          <label class="form-label fw-bold" style="color:#046957;">Option 1: Upload New Logo File</label>
+          <input type="file" name="logoFile" class="form-control" accept="image/jpeg,image/png,image/svg+xml,image/webp" onchange="previewSelectedLogo(this)">
+          <div class="form-text">Supports PNG, SVG, JPG, WebP.</div>
+        </div>
+
+        <div class="text-center text-muted fw-bold mb-4">OR</div>
+
+        <!-- Image URL Option -->
+        <div class="mb-4">
+          <label class="form-label fw-bold" style="color:#046957;">Option 2: Enter Logo Image URL</label>
+          <input type="url" name="logoUrl" class="form-control" placeholder="https://example.com/logo.png">
+          <div class="form-text">Paste a direct image link URL.</div>
+        </div>
+
+        <button type="submit" class="btn text-white w-100 py-2 fw-bold mb-3" style="background-color:#046957; border-radius:8px; font-size:1.05rem;">
+          <i class="fas fa-save me-2"></i> Save & Apply New Logo
+        </button>
+      </form>
+
+      <form action="/admin/reset-logo" method="POST" onsubmit="return confirm('Reset site logo back to default logo?');">
+        <button type="submit" class="btn btn-outline-secondary w-100 py-2 fw-semibold" style="border-radius:8px;">
+          <i class="fas fa-undo me-2"></i> Reset to Default Logo
+        </button>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function previewSelectedLogo(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('currentLogoPreview').src = e.target.result;
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+</script>

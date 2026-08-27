@@ -151,8 +151,11 @@
         <!-- Address -->
         <h6 class="fw-bold mb-3" style="color:#046957;">Address</h6>
         <div class="row g-3 mb-4">
-          <div class="col-12">
+          <div class="col-md-8">
             <input type="text" name="addressLine1" class="form-control" placeholder="Address Line" value="<%= locals.data && data.addressLine1 ? data.addressLine1 : (member.address && member.address.line1 ? member.address.line1 : '') %>">
+          </div>
+          <div class="col-md-4">
+            <input type="text" name="suburb" class="form-control" placeholder="Suburb / Area" value="<%= locals.data && data.suburb ? data.suburb : (member.address && member.address.suburb ? member.address.suburb : '') %>">
           </div>
           <div class="col-md-4">
             <input type="text" name="city" class="form-control" placeholder="City" value="<%= locals.data && data.city ? data.city : (member.address && member.address.city ? member.address.city : '') %>">

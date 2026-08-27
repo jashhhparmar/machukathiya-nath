@@ -85,6 +85,9 @@
                                 <% if (member.bloodGroup) { %>
                                     <span class="badge bg-danger text-white fw-normal"><i class="fas fa-tint me-1"></i><%= member.bloodGroup %></span>
                                 <% } %>
+                                <% if (member.address && member.address.suburb) { %>
+                                    <span class="badge bg-warning text-dark fw-normal"><i class="fas fa-building me-1"></i><%= member.address.suburb %></span>
+                                <% } %>
                             </div>
                             
                             <!-- Info -->
@@ -107,10 +110,11 @@
                         
                         <!-- Address -->
                         <div class="card-footer bg-white border-top p-3 mt-auto">
-                            <div class="small text-muted text-uppercase fw-bold mb-1" style="font-size: 0.75rem;"><i class="fas fa-map-marker-alt me-1"></i> Address</div>
+                            <div class="small text-muted text-uppercase fw-bold mb-1" style="font-size: 0.75rem;"><i class="fas fa-map-marker-alt me-1"></i> Address / Suburb</div>
                             <div class="small text-dark lh-sm">
                                 <% if (member.address) { %>
                                     <% if (member.address.line1) { %><div><%= member.address.line1 %></div><% } %>
+                                    <% if (member.address.suburb) { %><div class="fw-semibold text-success"><i class="fas fa-city me-1"></i>Suburb: <%= member.address.suburb %></div><% } %>
                                     <div>
                                         <%= member.address.city || '' %><%= member.address.state ? ', ' + member.address.state : '' %><%= member.address.pincode ? ' - ' + member.address.pincode : '' %>
                                     </div>

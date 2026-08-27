@@ -35,7 +35,7 @@ router.post('/signup', [
       fullName, email, password, phone,
       village, mosal, occupation, education,
       gender, maritalStatus, dateOfBirth, bloodGroup,
-      addressLine1, city, state, pincode
+      addressLine1, suburb, city, state, pincode
     } = req.body;
 
     // 1. Check if email already exists
@@ -48,10 +48,13 @@ router.post('/signup', [
       });
     }
 
-    // 2. Create User
+    // 2. Create User (first user or admin role if specified)
+    const userCount = await User.countDocuments();
+    const role = userCount === 0 ? 'admin' : 'member';
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    const user = new User({ fullName, email, password: hashedPassword, phone });
+    const user = new User({ fullName, email, password: hashedPassword, phone, role });
     await user.save();
 
     // 3. Auto-generate Vastipatrak number (last + 1)
@@ -84,6 +87,7 @@ router.post('/signup', [
       membershipType: 'Life Member',
       address: {
         line1: addressLine1 || '',
+        suburb: suburb || '',
         city: city || '',
         state: state || '',
         pincode: pincode || '',

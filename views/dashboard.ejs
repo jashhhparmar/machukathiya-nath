@@ -111,19 +111,26 @@
     <div class="col-12">
       <h5 class="fw-bold mb-3" style="color:#046957;"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
     </div>
-    <div class="col-md-4 mb-3">
+    <div class="col-md-3 mb-3">
       <a href="/vastipatrak" class="btn w-100 text-white py-3 fw-bold" style="background-color:#046957; border-radius:10px;">
         <i class="fas fa-book-open d-block fs-4 mb-1"></i> Browse Vastipatrak
       </a>
     </div>
-    <div class="col-md-4 mb-3">
-      <% if (locals.myFamily) { %>
+    <% if (locals.myFamily) { %>
+    <div class="col-md-3 mb-3">
       <a href="/family/<%= myFamily._id %>" class="btn w-100 py-3 fw-bold" style="background-color:#FDBE70; color:#333; border-radius:10px;">
         <i class="fas fa-users d-block fs-4 mb-1"></i> My Family Page
       </a>
-      <% } %>
     </div>
-    <div class="col-md-4 mb-3">
+    <% } %>
+    <% if (user.role === 'admin') { %>
+    <div class="col-md-3 mb-3">
+      <a href="/admin/logo" class="btn btn-primary w-100 py-3 fw-bold" style="border-radius:10px;">
+        <i class="fas fa-image d-block fs-4 mb-1"></i> Admin Logo Control
+      </a>
+    </div>
+    <% } %>
+    <div class="col-md-3 mb-3">
       <a href="/logout" class="btn btn-outline-danger w-100 py-3 fw-bold" style="border-radius:10px;">
         <i class="fas fa-sign-out-alt d-block fs-4 mb-1"></i> Logout
       </a>
