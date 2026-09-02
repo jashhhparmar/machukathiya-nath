@@ -1,5 +1,10 @@
 const nodemailer = require('nodemailer');
 
+// Validate required env vars on startup
+if (!process.env.BREVO_LOGIN || !process.env.BREVO_SMTP_KEY) {
+  console.warn('⚠️  MAILER WARNING: BREVO_LOGIN or BREVO_SMTP_KEY not set. OTP emails will fail.');
+}
+
 // Create reusable transporter using Brevo SMTP
 const transporter = nodemailer.createTransport({
   host: 'smtp-relay.brevo.com',
@@ -20,6 +25,10 @@ const transporter = nodemailer.createTransport({
  * @param {string} otpCode - 6-digit OTP
  */
 async function sendOTPEmail(toEmail, otpCode) {
+  console.log('[MAILER] Attempting to send OTP to:', toEmail);
+  console.log('[MAILER] BREVO_LOGIN set:', !!process.env.BREVO_LOGIN);
+  console.log('[MAILER] BREVO_SMTP_KEY set:', !!process.env.BREVO_SMTP_KEY);
+
   const mailOptions = {
     from: `"Machhu Kathiya Gyati" <${process.env.BREVO_LOGIN}>`,
     to: toEmail,
@@ -50,7 +59,16 @@ async function sendOTPEmail(toEmail, otpCode) {
     `
   };
 
-  return transporter.sendMail(mailOptions);
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log('[MAILER] ✅ Email sent successfully. Message ID:', info.messageId);
+    return info;
+  } catch (error) {
+    console.error('[MAILER] ❌ Send failed:', error.message);
+    console.error('[MAILER] Error code:', error.code);
+    console.error('[MAILER] Full error:', error);
+    throw error;
+  }
 }
 
 module.exports = { sendOTPEmail };
