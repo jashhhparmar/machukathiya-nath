@@ -1,19 +1,19 @@
 const nodemailer = require('nodemailer');
 
-// Create reusable transporter using Gmail SMTP with explicit settings
+// Create reusable transporter using Gmail SMTP with SSL (port 465)
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, // use STARTTLS
+  port: 465,
+  secure: true, // use SSL
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
   },
-  connectionTimeout: 10000,  // 10 seconds to connect
-  greetingTimeout: 10000,    // 10 seconds for greeting
-  socketTimeout: 15000,      // 15 seconds for socket
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 15000,
   tls: {
-    rejectUnauthorized: false // Allow self-signed certs on cloud hosts
+    rejectUnauthorized: false
   }
 });
 
