@@ -1,39 +1,30 @@
-const nodemailer = require('nodemailer');
-
-// Validate required env vars on startup
-if (!process.env.BREVO_LOGIN || !process.env.BREVO_SMTP_KEY) {
-  console.warn('⚠️  MAILER WARNING: BREVO_LOGIN or BREVO_SMTP_KEY not set. OTP emails will fail.');
-}
-
-// Create reusable transporter using Brevo SMTP
-const transporter = nodemailer.createTransport({
-  host: 'smtp-relay.brevo.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.BREVO_LOGIN,
-    pass: process.env.BREVO_SMTP_KEY
-  },
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 15000
-});
+/**
+ * Brevo HTTP API mailer — uses HTTPS (port 443) instead of SMTP
+ * This works on all cloud providers including Render which blocks SMTP ports
+ */
 
 /**
- * Send OTP email for password reset
+ * Send OTP email for password reset via Brevo HTTP API
  * @param {string} toEmail - Recipient email
  * @param {string} otpCode - 6-digit OTP
  */
 async function sendOTPEmail(toEmail, otpCode) {
-  console.log('[MAILER] Attempting to send OTP to:', toEmail);
-  console.log('[MAILER] BREVO_LOGIN set:', !!process.env.BREVO_LOGIN);
-  console.log('[MAILER] BREVO_SMTP_KEY set:', !!process.env.BREVO_SMTP_KEY);
+  const apiKey = process.env.BREVO_API_KEY;
 
-  const mailOptions = {
-    from: `"Machhu Kathiya Gyati" <${process.env.BREVO_LOGIN}>`,
-    to: toEmail,
+  if (!apiKey) {
+    throw new Error('BREVO_API_KEY is not set in environment variables');
+  }
+
+  console.log('[MAILER] Sending OTP to:', toEmail, 'via Brevo HTTP API');
+
+  const emailData = {
+    sender: {
+      name: 'Machhu Kathiya Gyati',
+      email: process.env.BREVO_SENDER_EMAIL || 'noreply@machhu-kathiya-gyati.com'
+    },
+    to: [{ email: toEmail }],
     subject: 'Password Reset OTP - Machhu Kathiya Sai Suthar Gyati',
-    html: `
+    htmlContent: `
       <div style="font-family: 'Nunito', Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 30px; background: #f8f9fa; border-radius: 12px;">
         <div style="text-align: center; margin-bottom: 25px;">
           <h2 style="color: #046957; margin: 0;">Machhu Kathiya Sai Suthar Gyati</h2>
@@ -59,16 +50,25 @@ async function sendOTPEmail(toEmail, otpCode) {
     `
   };
 
-  try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log('[MAILER] ✅ Email sent successfully. Message ID:', info.messageId);
-    return info;
-  } catch (error) {
-    console.error('[MAILER] ❌ Send failed:', error.message);
-    console.error('[MAILER] Error code:', error.code);
-    console.error('[MAILER] Full error:', error);
-    throw error;
+  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'accept': 'application/json',
+      'content-type': 'application/json',
+      'api-key': apiKey
+    },
+    body: JSON.stringify(emailData)
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    console.error('[MAILER] ❌ Brevo API error:', result);
+    throw new Error(result.message || 'Failed to send email via Brevo API');
   }
+
+  console.log('[MAILER] ✅ Email sent via Brevo API. Message ID:', result.messageId);
+  return result;
 }
 
 module.exports = { sendOTPEmail };
