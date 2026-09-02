@@ -1,20 +1,17 @@
 const nodemailer = require('nodemailer');
 
-// Create reusable transporter using Gmail SMTP with SSL (port 465)
+// Create reusable transporter using Brevo SMTP
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true, // use SSL
+  host: 'smtp-relay.brevo.com',
+  port: 587,
+  secure: false,
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+    user: process.env.BREVO_LOGIN,
+    pass: process.env.BREVO_SMTP_KEY
   },
   connectionTimeout: 10000,
   greetingTimeout: 10000,
-  socketTimeout: 15000,
-  tls: {
-    rejectUnauthorized: false
-  }
+  socketTimeout: 15000
 });
 
 /**
@@ -24,7 +21,7 @@ const transporter = nodemailer.createTransport({
  */
 async function sendOTPEmail(toEmail, otpCode) {
   const mailOptions = {
-    from: `"Machhu Kathiya Gyati" <${process.env.EMAIL_USER}>`,
+    from: `"Machhu Kathiya Gyati" <${process.env.BREVO_LOGIN}>`,
     to: toEmail,
     subject: 'Password Reset OTP - Machhu Kathiya Sai Suthar Gyati',
     html: `
