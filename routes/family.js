@@ -3,6 +3,7 @@ const router = express.Router();
 const { requireLogin } = require('../middleware/auth');
 const Family = require('../models/Family');
 const Member = require('../models/Member');
+const User = require('../models/User');
 
 router.get('/family/:id', requireLogin, async (req, res) => {
   try {
@@ -22,11 +23,20 @@ router.get('/family/:id', requireLogin, async (req, res) => {
       return valA - valB;
     });
 
+    // Check if current user is admin
+    const currentUser = await User.findById(req.session.userId).lean();
+    const isAdmin = currentUser && currentUser.role === 'admin';
+
     res.render('family-detail', {
       title: `Family Details - ${family.familyHead}`,
       family,
-      members
+      members,
+      isAdmin,
+      success: req.session.successMessage || null,
+      error: req.session.errorMessage || null
     });
+    req.session.successMessage = null;
+    req.session.errorMessage = null;
   } catch (error) {
     console.error(error);
     res.status(500).send('Server Error');

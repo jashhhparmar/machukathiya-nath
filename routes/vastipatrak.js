@@ -3,6 +3,7 @@ const router = express.Router();
 const { requireLogin } = require('../middleware/auth');
 const Family = require('../models/Family');
 const Member = require('../models/Member');
+const User = require('../models/User');
 
 // Helper to escape regex special characters
 function escapeRegExp(string) {
@@ -116,6 +117,10 @@ router.get('/vastipatrak', requireLogin, async (req, res) => {
       family.selfMember = selfMember;
     }
 
+    // Check if current user is admin
+    const currentUser = await User.findById(req.session.userId).lean();
+    const isAdmin = currentUser && currentUser.role === 'admin';
+
     res.render('vastipatrak', {
       title: 'Vastipatrak Directory & Search',
       families,
@@ -124,8 +129,13 @@ router.get('/vastipatrak', requireLogin, async (req, res) => {
       currentPage: page,
       totalPages,
       search,
-      totalFamilies
+      totalFamilies,
+      isAdmin,
+      success: req.session.successMessage || null,
+      error: req.session.errorMessage || null
     });
+    req.session.successMessage = null;
+    req.session.errorMessage = null;
   } catch (error) {
     console.error(error);
     res.status(500).send('Server Error');

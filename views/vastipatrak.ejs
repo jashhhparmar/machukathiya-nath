@@ -6,6 +6,19 @@
 </section>
 
 <div class="container py-5">
+    <!-- Success / Error Messages -->
+    <% if (locals.success) { %>
+    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fas fa-check-circle me-2"></i><%= success %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <% } %>
+    <% if (locals.error) { %>
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i><%= error %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <% } %>
     <!-- Search Bar -->
     <div class="row justify-content-center mb-4">
         <div class="col-md-8">
@@ -105,7 +118,15 @@
                                 <div><i class="fas fa-users me-1"></i> <%= family.totalMembers %> Members</div>
                             </div>
                             
-                            <a href="/family/<%= family._id %>" class="btn btn-outline-success w-100 fw-semibold" style="border-color: #046957; color: #046957;">View Family Details</a>
+                            <div class="d-flex flex-column gap-2">
+                                <a href="/family/<%= family._id %>" class="btn btn-outline-success w-100 fw-semibold" style="border-color: #046957; color: #046957;">View Family Details</a>
+                                <% if (locals.isAdmin) { %>
+                                <button type="button" class="btn btn-outline-danger btn-sm w-100 fw-semibold"
+                                    onclick="showDeleteFamilyModal('<%= family._id %>', '<%= family.familyHead %>', '<%= family.vastipatrakNo %>', '<%= family.totalMembers %>')">
+                                    <i class="fas fa-trash-alt me-1"></i> Delete Family
+                                </button>
+                                <% } %>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -118,6 +139,52 @@
             </div>
         <% } %>
     </div>
+
+    <!-- Delete Family Confirmation Modal (Admin Only) -->
+    <% if (locals.isAdmin) { %>
+    <div class="modal fade" id="deleteFamilyModal" tabindex="-1" aria-labelledby="deleteFamilyModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+          <div class="modal-header bg-danger text-white border-0">
+            <h5 class="modal-title fw-bold" id="deleteFamilyModalLabel">
+              <i class="fas fa-exclamation-triangle me-2"></i> Delete Entire Family
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-4">
+            <div class="text-center mb-3">
+              <i class="fas fa-trash-alt fa-3x text-danger mb-3"></i>
+            </div>
+            <p class="text-center mb-1">You are about to permanently delete the family:</p>
+            <h5 class="text-center fw-bold text-danger mb-2" id="deleteFamilyName"></h5>
+            <p class="text-center text-muted small mb-3" id="deleteFamilyInfo"></p>
+            <div class="alert alert-warning small mb-0">
+              <i class="fas fa-exclamation-circle me-1"></i>
+              <strong>Warning:</strong> This action will permanently delete the family and <strong>all its members</strong>. This cannot be undone.
+            </div>
+          </div>
+          <div class="modal-footer border-0 d-flex justify-content-between">
+            <button type="button" class="btn btn-secondary fw-semibold px-4" data-bs-dismiss="modal">Cancel</button>
+            <form id="deleteFamilyForm" action="" method="POST" style="display: inline;">
+              <button type="submit" class="btn btn-danger fw-semibold px-4">
+                <i class="fas fa-trash-alt me-1"></i> Yes, Delete Family
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+    function showDeleteFamilyModal(familyId, familyHead, vastipatrakNo, totalMembers) {
+      document.getElementById('deleteFamilyName').textContent = familyHead;
+      document.getElementById('deleteFamilyInfo').textContent = 'Vastipatrak #' + vastipatrakNo + ' • ' + totalMembers + ' member(s)';
+      document.getElementById('deleteFamilyForm').action = '/admin/family/' + familyId + '/delete';
+      var modal = new bootstrap.Modal(document.getElementById('deleteFamilyModal'));
+      modal.show();
+    }
+    </script>
+    <% } %>
 
     <!-- Pagination -->
     <% if (locals.totalPages && totalPages > 1) { %>

@@ -97,4 +97,69 @@ router.post('/admin/reset-logo', requireAdmin, async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// ADMIN: DELETE ENTIRE FAMILY (and all its members)
+// ═══════════════════════════════════════════════════════════════════════════════
+const Family = require('../models/Family');
+const Member = require('../models/Member');
+
+router.post('/admin/family/:id/delete', requireAdmin, async (req, res) => {
+  try {
+    const family = await Family.findById(req.params.id);
+    if (!family) {
+      req.session.errorMessage = 'Family not found.';
+      return res.redirect('/vastipatrak');
+    }
+
+    // Delete all members belonging to this family
+    await Member.deleteMany({ family: family._id });
+
+    // Delete the family itself
+    await Family.findByIdAndDelete(family._id);
+
+    req.session.successMessage = `Family "${family.familyHead}" (Vastipatrak #${family.vastipatrakNo}) and all its members have been deleted.`;
+    res.redirect('/vastipatrak');
+  } catch (err) {
+    console.error(err);
+    req.session.errorMessage = 'Failed to delete family: ' + err.message;
+    res.redirect('/vastipatrak');
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ADMIN: DELETE INDIVIDUAL MEMBER
+// ═══════════════════════════════════════════════════════════════════════════════
+router.post('/admin/family/:id/member/:memberId/delete', requireAdmin, async (req, res) => {
+  try {
+    const family = await Family.findById(req.params.id);
+    if (!family) {
+      req.session.errorMessage = 'Family not found.';
+      return res.redirect('/vastipatrak');
+    }
+
+    const member = await Member.findById(req.params.memberId);
+    if (!member) {
+      req.session.errorMessage = 'Member not found.';
+      return res.redirect(`/family/${family._id}`);
+    }
+
+    if (member.family.toString() !== family._id.toString()) {
+      req.session.errorMessage = 'This member does not belong to this family.';
+      return res.redirect(`/family/${family._id}`);
+    }
+
+    await Member.findByIdAndDelete(member._id);
+
+    // Decrement totalMembers on the family
+    await Family.findByIdAndUpdate(family._id, { $inc: { totalMembers: -1 } });
+
+    req.session.successMessage = `Member "${member.fullName}" has been deleted from the family.`;
+    res.redirect(`/family/${family._id}`);
+  } catch (err) {
+    console.error(err);
+    req.session.errorMessage = 'Failed to delete member: ' + err.message;
+    res.redirect(`/family/${req.params.id}`);
+  }
+});
+
 module.exports = router;

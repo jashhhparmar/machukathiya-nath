@@ -200,4 +200,45 @@ router.post('/family/:id/member/:memberId/edit', requireLogin, upload.single('pr
   }
 });
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// DELETE MEMBER (family owner can delete their own family members)
+// ═══════════════════════════════════════════════════════════════════════════════
+router.post('/family/:id/member/:memberId/delete', requireLogin, async (req, res) => {
+  try {
+    const family = await Family.findById(req.params.id).lean();
+    if (!family) return res.status(404).send('Family not found');
+
+    // Check: must be family owner OR admin
+    const User = require('../models/User');
+    const currentUser = await User.findById(req.session.userId).lean();
+    const isAdmin = currentUser && currentUser.role === 'admin';
+
+    if (!isOwner(family, req.session.userId) && !isAdmin) {
+      return res.status(403).send('You are not allowed to delete members of this family.');
+    }
+
+    const member = await Member.findById(req.params.memberId);
+    if (!member) return res.status(404).send('Member not found');
+
+    if (member.family.toString() !== family._id.toString()) {
+      return res.status(403).send('This member does not belong to this family.');
+    }
+
+    // Prevent deleting the SELF member (family head) — they must delete the whole family
+    if (member.relation === 'SELF' && !isAdmin) {
+      return res.status(403).send('Cannot delete the family head. Contact admin to remove the entire family.');
+    }
+
+    await Member.findByIdAndDelete(member._id);
+
+    // Decrement totalMembers on the family
+    await Family.findByIdAndUpdate(family._id, { $inc: { totalMembers: -1 } });
+
+    res.redirect(`/family/${family._id}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+});
+
 module.exports = router;
