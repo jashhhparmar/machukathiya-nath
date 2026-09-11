@@ -6,7 +6,7 @@ const crypto = require('crypto');
 const User = require('../models/User');
 const Family = require('../models/Family');
 const Member = require('../models/Member');
-const { sendOTPEmail } = require('../config/mailer');
+const { sendOTPEmail, sendAdminNotificationEmail } = require('../config/mailer');
 
 // GET /signup
 router.get('/signup', (req, res) => {
@@ -89,13 +89,15 @@ router.post('/terms-and-conditions', async (req, res) => {
       addressLine1, suburb, city, state, pincode
     } = req.session.pendingSignup;
 
-    // 1. Create User (first user = admin)
+    // 1. Create User (first user = admin + auto-approved)
     const userCount = await User.countDocuments();
-    const role = userCount === 0 ? 'admin' : 'member';
+    const isFirstUser = userCount === 0;
+    const role = isFirstUser ? 'admin' : 'member';
+    const approvalStatus = isFirstUser ? 'approved' : 'pending';
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    const user = new User({ fullName, email, password: hashedPassword, phone, role });
+    const user = new User({ fullName, email, password: hashedPassword, phone, role, approvalStatus });
     await user.save();
 
     // 2. Auto-generate Vastipatrak number (last + 1)
@@ -137,11 +139,35 @@ router.post('/terms-and-conditions', async (req, res) => {
     });
     await member.save();
 
-    // 5. Clear pending signup data and set session
+    // 5. Clear pending signup data
     delete req.session.pendingSignup;
-    req.session.userId = user._id;
-    req.session.familyId = family._id;
-    res.redirect('/dashboard');
+
+    // 6. If first user (admin), auto-login; otherwise show pending page
+    if (isFirstUser) {
+      req.session.userId = user._id;
+      req.session.familyId = family._id;
+      return res.redirect('/dashboard');
+    }
+
+    // 7. Send email notification to admin
+    try {
+      const adminEmail = process.env.ADMIN_EMAIL;
+      if (adminEmail) {
+        await sendAdminNotificationEmail(adminEmail, {
+          fullName, email, phone, village, mosal,
+          gender, maritalStatus, occupation, education
+        });
+      }
+    } catch (emailErr) {
+      console.error('[SIGNUP] Failed to send admin notification email:', emailErr.message);
+      // Don't block signup if email fails
+    }
+
+    // 8. Redirect to pending approval page
+    res.render('signup-pending', {
+      title: 'Registration Submitted',
+      applicantName: fullName
+    });
 
   } catch (error) {
     console.error(error);
@@ -190,6 +216,28 @@ router.post('/login', [
         title: 'Login',
         errors: [{ msg: 'Invalid email or password' }],
         data: req.body
+      });
+    }
+
+    // Check approval status before allowing login
+    // Existing users without approvalStatus are treated as approved
+    const status = user.approvalStatus || 'approved';
+
+    if (status === 'pending') {
+      return res.render('login', {
+        title: 'Login',
+        errors: [{ msg: 'Your account is awaiting admin approval. You will receive an email once approved.' }],
+        data: req.body,
+        success: null
+      });
+    }
+
+    if (status === 'rejected') {
+      return res.render('login', {
+        title: 'Login',
+        errors: [{ msg: 'Your registration was not approved. Please contact the admin for more information.' }],
+        data: req.body,
+        success: null
       });
     }
 

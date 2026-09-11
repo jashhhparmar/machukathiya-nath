@@ -37,10 +37,15 @@ const Setting = require('./models/Setting');
 app.use(async (req, res, next) => {
   res.locals.user = null;
   res.locals.siteLogo = '/images/logo.png';
+  res.locals.pendingApprovalCount = 0;
   if (req.session.userId) {
     try {
       const user = await User.findById(req.session.userId).lean();
       res.locals.user = user;
+      // If admin, fetch pending approval count for the badge
+      if (user && user.role === 'admin') {
+        res.locals.pendingApprovalCount = await User.countDocuments({ approvalStatus: 'pending', role: { $ne: 'admin' } });
+      }
     } catch (err) {
       console.error(err);
     }

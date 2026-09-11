@@ -25,6 +25,15 @@ const userSchema = new mongoose.Schema({
     enum: ['member', 'admin'],
     default: 'member'
   },
+  approvalStatus: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending'
+  },
+  rejectionReason: {
+    type: String,
+    default: null
+  },
   resetOTP: {
     type: String,
     default: null

@@ -125,6 +125,16 @@
     <% } %>
     <% if (user.role === 'admin') { %>
     <div class="col-md-3 mb-3">
+      <a href="/admin/approvals" class="btn w-100 py-3 fw-bold text-white position-relative" style="background-color:#046957; border-radius:10px;">
+        <i class="fas fa-user-shield d-block fs-4 mb-1"></i> Manage Approvals
+        <% if (locals.pendingApprovalCount && pendingApprovalCount > 0) { %>
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark" style="font-size: 0.7rem;">
+            <%= pendingApprovalCount %>
+          </span>
+        <% } %>
+      </a>
+    </div>
+    <div class="col-md-3 mb-3">
       <a href="/admin/logo" class="btn btn-primary w-100 py-3 fw-bold" style="border-radius:10px;">
         <i class="fas fa-image d-block fs-4 mb-1"></i> Admin Logo Control
       </a>

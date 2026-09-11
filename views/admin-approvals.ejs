@@ -1,0 +1,294 @@
+<div class="container py-5">
+
+  <!-- Page Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+      <h3 class="fw-bold mb-1" style="color: #046957;">
+        <i class="fas fa-user-shield me-2"></i>Member Approvals
+      </h3>
+      <p class="text-muted mb-0 small">Review and manage new registration requests</p>
+    </div>
+    <a href="/dashboard" class="btn btn-outline-secondary btn-sm fw-semibold">
+      <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+    </a>
+  </div>
+
+  <!-- Success/Error Messages -->
+  <% if (locals.success) { %>
+    <div class="alert alert-success alert-dismissible fade show py-2" role="alert">
+      <i class="fas fa-check-circle me-1"></i> <%= success %>
+      <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert"></button>
+    </div>
+  <% } %>
+  <% if (locals.error) { %>
+    <div class="alert alert-danger alert-dismissible fade show py-2" role="alert">
+      <i class="fas fa-exclamation-circle me-1"></i> <%= error %>
+      <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="alert"></button>
+    </div>
+  <% } %>
+
+  <!-- Stats Row -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm" style="border-left: 4px solid #ffc107 !important;">
+        <div class="card-body d-flex align-items-center py-3">
+          <div class="rounded-circle p-2 bg-warning bg-opacity-10 me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+            <i class="fas fa-clock text-warning"></i>
+          </div>
+          <div>
+            <h4 class="mb-0 fw-bold"><%= pendingUsers.length %></h4>
+            <div class="text-muted small fw-semibold text-uppercase">Pending</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm" style="border-left: 4px solid #28a745 !important;">
+        <div class="card-body d-flex align-items-center py-3">
+          <div class="rounded-circle p-2 bg-success bg-opacity-10 me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+            <i class="fas fa-check-circle text-success"></i>
+          </div>
+          <div>
+            <h4 class="mb-0 fw-bold"><%= approvedUsers.length %></h4>
+            <div class="text-muted small fw-semibold text-uppercase">Approved</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm" style="border-left: 4px solid #dc3545 !important;">
+        <div class="card-body d-flex align-items-center py-3">
+          <div class="rounded-circle p-2 bg-danger bg-opacity-10 me-3 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+            <i class="fas fa-times-circle text-danger"></i>
+          </div>
+          <div>
+            <h4 class="mb-0 fw-bold"><%= rejectedUsers.length %></h4>
+            <div class="text-muted small fw-semibold text-uppercase">Rejected</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <ul class="nav nav-tabs mb-4" id="approvalTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active fw-semibold" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" style="color: #046957;">
+        <i class="fas fa-clock me-1"></i> Pending
+        <% if (pendingUsers.length > 0) { %>
+          <span class="badge rounded-pill bg-warning text-dark ms-1"><%= pendingUsers.length %></span>
+        <% } %>
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-semibold" id="approved-tab" data-bs-toggle="tab" data-bs-target="#approved" type="button" role="tab" style="color: #046957;">
+        <i class="fas fa-check me-1"></i> Approved
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link fw-semibold" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected" type="button" role="tab" style="color: #046957;">
+        <i class="fas fa-times me-1"></i> Rejected
+      </button>
+    </li>
+  </ul>
+
+  <!-- Tab Content -->
+  <div class="tab-content" id="approvalTabContent">
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- PENDING TAB -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="tab-pane fade show active" id="pending" role="tabpanel">
+      <% if (pendingUsers.length === 0) { %>
+        <div class="text-center py-5">
+          <div class="mb-3">
+            <i class="fas fa-inbox fa-3x" style="color: #ccc;"></i>
+          </div>
+          <h5 class="text-muted fw-bold">No Pending Requests</h5>
+          <p class="text-muted small">All signup requests have been reviewed.</p>
+        </div>
+      <% } else { %>
+        <% pendingUsers.forEach(function(pu) { %>
+          <div class="card border-0 shadow-sm mb-4" style="border-radius: 12px; overflow: hidden;">
+            <!-- Card Header -->
+            <div class="card-header py-3 px-4 d-flex align-items-center justify-content-between flex-wrap gap-2" style="background: linear-gradient(135deg, #046957 0%, #068a6e 100%);">
+              <div class="d-flex align-items-center">
+                <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px; background: rgba(255,255,255,0.2);">
+                  <i class="fas fa-user text-white"></i>
+                </div>
+                <div>
+                  <h6 class="text-white fw-bold mb-0"><%= pu.user.fullName %></h6>
+                  <small class="text-white-50">Registered on <%= new Date(pu.user.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %></small>
+                </div>
+              </div>
+              <span class="badge rounded-pill px-3 py-2 fw-bold" style="background: #FFF3CD; color: #856404; font-size: 0.75rem;">
+                <i class="fas fa-hourglass-half me-1"></i> PENDING
+              </span>
+            </div>
+
+            <div class="card-body p-4">
+              <!-- Applicant Details Grid -->
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="bg-light rounded-3 p-3">
+                    <div class="text-muted small fw-bold text-uppercase mb-2"><i class="fas fa-id-card me-1"></i> Account Info</div>
+                    <table class="table table-sm table-borderless mb-0" style="font-size: 0.85rem;">
+                      <tr>
+                        <td class="text-muted fw-semibold" style="width: 100px;">Email</td>
+                        <td class="fw-bold"><%= pu.user.email %></td>
+                      </tr>
+                      <tr>
+                        <td class="text-muted fw-semibold">Phone</td>
+                        <td><%= pu.user.phone || '—' %></td>
+                      </tr>
+                      <tr>
+                        <td class="text-muted fw-semibold">Gender</td>
+                        <td><%= pu.member ? pu.member.gender : '—' %></td>
+                      </tr>
+                      <tr>
+                        <td class="text-muted fw-semibold">Status</td>
+                        <td><%= pu.member ? pu.member.maritalStatus : '—' %></td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="bg-light rounded-3 p-3">
+                    <div class="text-muted small fw-bold text-uppercase mb-2"><i class="fas fa-home me-1"></i> Family Info</div>
+                    <table class="table table-sm table-borderless mb-0" style="font-size: 0.85rem;">
+                      <tr>
+                        <td class="text-muted fw-semibold" style="width: 100px;">Village</td>
+                        <td class="fw-bold"><%= pu.family ? pu.family.village : '—' %></td>
+                      </tr>
+                      <tr>
+                        <td class="text-muted fw-semibold">Mosal</td>
+                        <td><%= pu.family ? (pu.family.mosal || '—') : '—' %></td>
+                      </tr>
+                      <tr>
+                        <td class="text-muted fw-semibold">Occupation</td>
+                        <td><%= pu.member ? (pu.member.occupation || '—') : '—' %></td>
+                      </tr>
+                      <tr>
+                        <td class="text-muted fw-semibold">Education</td>
+                        <td><%= pu.member ? (pu.member.education || '—') : '—' %></td>
+                      </tr>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <% if (pu.member && pu.member.address) { %>
+                <div class="bg-light rounded-3 p-3 mt-3">
+                  <div class="text-muted small fw-bold text-uppercase mb-1"><i class="fas fa-map-marker-alt me-1"></i> Address</div>
+                  <p class="mb-0 small">
+                    <%= pu.member.address.line1 ? pu.member.address.line1 + ', ' : '' %><%= pu.member.address.suburb ? pu.member.address.suburb + ', ' : '' %><%= pu.member.address.city ? pu.member.address.city + ', ' : '' %><%= pu.member.address.state ? pu.member.address.state : '' %> <%= pu.member.address.pincode ? '- ' + pu.member.address.pincode : '' %>
+                  </p>
+                </div>
+              <% } %>
+
+              <!-- Action Buttons -->
+              <div class="d-flex gap-2 mt-4 flex-wrap">
+                <form action="/admin/approvals/<%= pu.user._id %>/approve" method="POST" class="d-inline">
+                  <button type="submit" class="btn text-white fw-bold px-4 py-2" style="background-color: #28a745; border-radius: 8px;" onclick="return confirm('Approve this member? They will receive an email notification.')">
+                    <i class="fas fa-check-circle me-1"></i> Approve
+                  </button>
+                </form>
+                <button type="button" class="btn btn-outline-danger fw-bold px-4 py-2" style="border-radius: 8px;" data-bs-toggle="collapse" data-bs-target="#reject-<%= pu.user._id %>">
+                  <i class="fas fa-times-circle me-1"></i> Reject
+                </button>
+              </div>
+
+              <!-- Reject Form (Collapsible) -->
+              <div class="collapse mt-3" id="reject-<%= pu.user._id %>">
+                <form action="/admin/approvals/<%= pu.user._id %>/reject" method="POST" class="card card-body border-danger bg-danger bg-opacity-10" style="border-radius: 10px;">
+                  <label class="form-label fw-semibold small text-danger">
+                    <i class="fas fa-comment-alt me-1"></i> Reason for rejection (optional)
+                  </label>
+                  <textarea name="rejectionReason" class="form-control mb-3" rows="2" placeholder="e.g. Not a known community member"></textarea>
+                  <button type="submit" class="btn btn-danger fw-bold px-4" onclick="return confirm('Reject this registration? This action cannot be undone.')">
+                    <i class="fas fa-ban me-1"></i> Confirm Rejection
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      <% } %>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- APPROVED TAB -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="tab-pane fade" id="approved" role="tabpanel">
+      <% if (approvedUsers.length === 0) { %>
+        <div class="text-center py-5">
+          <i class="fas fa-check-circle fa-3x mb-3" style="color: #ccc;"></i>
+          <h5 class="text-muted fw-bold">No Approved Members Yet</h5>
+        </div>
+      <% } else { %>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th class="small fw-bold text-muted text-uppercase">Name</th>
+                <th class="small fw-bold text-muted text-uppercase">Email</th>
+                <th class="small fw-bold text-muted text-uppercase">Phone</th>
+                <th class="small fw-bold text-muted text-uppercase">Registered</th>
+                <th class="small fw-bold text-muted text-uppercase">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% approvedUsers.forEach(function(au) { %>
+                <tr>
+                  <td class="fw-bold"><%= au.fullName %></td>
+                  <td class="small"><%= au.email %></td>
+                  <td class="small"><%= au.phone || '—' %></td>
+                  <td class="small text-muted"><%= new Date(au.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %></td>
+                  <td><span class="badge bg-success rounded-pill px-3"><i class="fas fa-check me-1"></i>Approved</span></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- REJECTED TAB -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="tab-pane fade" id="rejected" role="tabpanel">
+      <% if (rejectedUsers.length === 0) { %>
+        <div class="text-center py-5">
+          <i class="fas fa-times-circle fa-3x mb-3" style="color: #ccc;"></i>
+          <h5 class="text-muted fw-bold">No Rejected Requests</h5>
+        </div>
+      <% } else { %>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th class="small fw-bold text-muted text-uppercase">Name</th>
+                <th class="small fw-bold text-muted text-uppercase">Email</th>
+                <th class="small fw-bold text-muted text-uppercase">Reason</th>
+                <th class="small fw-bold text-muted text-uppercase">Registered</th>
+                <th class="small fw-bold text-muted text-uppercase">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% rejectedUsers.forEach(function(ru) { %>
+                <tr>
+                  <td class="fw-bold"><%= ru.fullName %></td>
+                  <td class="small"><%= ru.email %></td>
+                  <td class="small text-muted"><%= ru.rejectionReason || '—' %></td>
+                  <td class="small text-muted"><%= new Date(ru.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %></td>
+                  <td><span class="badge bg-danger rounded-pill px-3"><i class="fas fa-times me-1"></i>Rejected</span></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+
+  </div>
+</div>
