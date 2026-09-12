@@ -34,6 +34,16 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  linkedFamily: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Family',
+    default: null
+  },
+  linkedMember: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Member',
+    default: null
+  },
   resetOTP: {
     type: String,
     default: null

@@ -15,7 +15,7 @@ router.get('/signup', (req, res) => {
   res.render('signup', { title: 'Sign Up', errors: [], data: pendingData });
 });
 
-// POST /signup — validates and stores data in session, then redirects to T&C
+// POST /signup — validates and stores data in session, then checks for family matches
 router.post('/signup', [
   body('fullName').notEmpty().withMessage('Full Name is required'),
   body('email').isEmail().withMessage('Valid email is required'),
@@ -48,7 +48,72 @@ router.post('/signup', [
     // Store validated form data in session (NOT in database yet)
     req.session.pendingSignup = req.body;
 
-    // Redirect to Terms & Conditions page
+    // ── MATCHING ALGORITHM: Check if this person exists in any family ──
+    const nameRegex = new RegExp('^' + req.body.fullName.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
+    const matchingMembers = await Member.find({ fullName: nameRegex }).populate('family').lean();
+
+    const qualifiedMatches = [];
+    for (const member of matchingMembers) {
+      // Skip members that already have a linked user account
+      if (member.linkedUser) continue;
+
+      let score = 0;
+      const totalChecks = 4;
+
+      // Check phone match
+      if (req.body.phone && member.phone && req.body.phone.replace(/\s/g, '') === member.phone.replace(/\s/g, '')) {
+        score++;
+      }
+      // Check DOB match
+      if (req.body.dateOfBirth && member.dateOfBirth) {
+        const inputDOB = new Date(req.body.dateOfBirth).toISOString().split('T')[0];
+        const memberDOB = new Date(member.dateOfBirth).toISOString().split('T')[0];
+        if (inputDOB === memberDOB) score++;
+      }
+      // Check gender match
+      if (req.body.gender && member.gender && req.body.gender === member.gender) {
+        score++;
+      }
+      // Check village match (from family)
+      if (req.body.village && member.family && member.family.village) {
+        if (req.body.village.trim().toUpperCase() === member.family.village.trim().toUpperCase()) {
+          score++;
+        }
+      }
+
+      // Need at least 2/4 matches
+      if (score >= 2) {
+        qualifiedMatches.push({
+          member,
+          family: member.family,
+          score,
+          totalChecks
+        });
+      }
+    }
+
+    // If matches found, show the choose page
+    if (qualifiedMatches.length > 0) {
+      req.session.familyMatches = qualifiedMatches.map(m => ({
+        memberId: m.member._id.toString(),
+        memberName: m.member.fullName,
+        memberRelation: m.member.relation,
+        memberPhone: m.member.phone,
+        memberGender: m.member.gender,
+        memberDOB: m.member.dateOfBirth,
+        familyId: m.family._id.toString(),
+        familyHead: m.family.familyHead,
+        familyVillage: m.family.village,
+        familyVastipatrakNo: m.family.vastipatrakNo,
+        familyTotalMembers: m.family.totalMembers,
+        score: m.score,
+        totalChecks: m.totalChecks
+      }));
+      return res.redirect('/signup-choose');
+    }
+
+    // No matches — proceed to Terms & Conditions
+    req.session.familyMatches = null;
     res.redirect('/terms-and-conditions');
 
   } catch (error) {
@@ -100,9 +165,9 @@ router.post('/terms-and-conditions', async (req, res) => {
     const user = new User({ fullName, email, password: hashedPassword, phone, role, approvalStatus });
     await user.save();
 
-    // 2. Auto-generate Vastipatrak number (last + 1)
+    // 2. Auto-generate Vastipatrak number (last + 1, starting from 1)
     const lastFamily = await Family.findOne().sort({ vastipatrakNo: -1 });
-    const vastipatrakNo = lastFamily ? lastFamily.vastipatrakNo + 1 : 1001;
+    const vastipatrakNo = lastFamily ? lastFamily.vastipatrakNo + 1 : 1;
 
     // 3. Create Family
     const family = new Family({
@@ -128,6 +193,7 @@ router.post('/terms-and-conditions', async (req, res) => {
       occupation: occupation ? occupation.toUpperCase() : '',
       education: education || '',
       membershipType: 'Life Member',
+      linkedUser: user._id,
       address: {
         line1: addressLine1 || '',
         suburb: suburb || '',
@@ -139,17 +205,23 @@ router.post('/terms-and-conditions', async (req, res) => {
     });
     await member.save();
 
-    // 5. Clear pending signup data
-    delete req.session.pendingSignup;
+    // 5. Link user to family and member
+    user.linkedFamily = family._id;
+    user.linkedMember = member._id;
+    await user.save();
 
-    // 6. If first user (admin), auto-login; otherwise show pending page
+    // 6. Clear pending signup data
+    delete req.session.pendingSignup;
+    delete req.session.familyMatches;
+
+    // 7. If first user (admin), auto-login; otherwise show pending page
     if (isFirstUser) {
       req.session.userId = user._id;
       req.session.familyId = family._id;
       return res.redirect('/dashboard');
     }
 
-    // 7. Send email notification to admin
+    // 8. Send email notification to admin
     try {
       const adminEmail = process.env.ADMIN_EMAIL;
       if (adminEmail) {
@@ -160,10 +232,9 @@ router.post('/terms-and-conditions', async (req, res) => {
       }
     } catch (emailErr) {
       console.error('[SIGNUP] Failed to send admin notification email:', emailErr.message);
-      // Don't block signup if email fails
     }
 
-    // 8. Redirect to pending approval page
+    // 9. Redirect to pending approval page
     res.render('signup-pending', {
       title: 'Registration Submitted',
       applicantName: fullName
@@ -173,6 +244,112 @@ router.post('/terms-and-conditions', async (req, res) => {
     console.error(error);
     res.status(500).send('Server Error');
   }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// FAMILY JOIN FLOW — Choose to join existing family or create new
+// ═══════════════════════════════════════════════════════════════
+
+// GET /signup-choose — Show matched families
+router.get('/signup-choose', (req, res) => {
+  if (!req.session.pendingSignup || !req.session.familyMatches) {
+    return res.redirect('/signup');
+  }
+  res.render('signup-choose', {
+    title: 'Join Existing Family?',
+    matches: req.session.familyMatches,
+    applicantName: req.session.pendingSignup.fullName
+  });
+});
+
+// POST /signup-join — Join an existing family (creates User only, links to existing Member)
+router.post('/signup-join', async (req, res) => {
+  if (!req.session.pendingSignup || !req.session.familyMatches) {
+    return res.redirect('/signup');
+  }
+
+  const { memberId, familyId } = req.body;
+  if (!memberId || !familyId) {
+    return res.redirect('/signup-choose');
+  }
+
+  try {
+    const { fullName, email, password, phone } = req.session.pendingSignup;
+
+    // Verify the family and member exist
+    const family = await Family.findById(familyId);
+    const member = await Member.findById(memberId);
+    if (!family || !member) {
+      return res.redirect('/signup-choose');
+    }
+
+    // Check member isn't already linked to another user
+    if (member.linkedUser) {
+      req.session.errorMessage = 'This member profile is already linked to another account.';
+      return res.redirect('/signup-choose');
+    }
+
+    // Create User account (pending approval)
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    const user = new User({
+      fullName,
+      email,
+      password: hashedPassword,
+      phone,
+      role: 'member',
+      approvalStatus: 'pending',
+      linkedFamily: family._id,
+      linkedMember: member._id
+    });
+    await user.save();
+
+    // Link member back to user
+    member.linkedUser = user._id;
+    await member.save();
+
+    // Clear session data
+    delete req.session.pendingSignup;
+    delete req.session.familyMatches;
+
+    // Send admin notification
+    try {
+      const adminEmail = process.env.ADMIN_EMAIL;
+      if (adminEmail) {
+        await sendAdminNotificationEmail(adminEmail, {
+          fullName, email, phone,
+          village: family.village,
+          mosal: family.mosal,
+          gender: member.gender,
+          maritalStatus: member.maritalStatus,
+          occupation: member.occupation,
+          education: member.education,
+          joinType: `Joining ${family.familyHead}'s family (VP #${String(family.vastipatrakNo).padStart(4, '0')})`
+        });
+      }
+    } catch (emailErr) {
+      console.error('[SIGNUP-JOIN] Failed to send admin notification email:', emailErr.message);
+    }
+
+    res.render('signup-pending', {
+      title: 'Registration Submitted',
+      applicantName: fullName
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server Error');
+  }
+});
+
+// POST /signup-create-new — User chose to create new family despite matches
+router.post('/signup-create-new', (req, res) => {
+  if (!req.session.pendingSignup) {
+    return res.redirect('/signup');
+  }
+  // Clear matches and proceed to T&C
+  req.session.familyMatches = null;
+  res.redirect('/terms-and-conditions');
 });
 
 // GET /login

@@ -140,6 +140,10 @@ async function sendAdminNotificationEmail(adminEmail, applicant) {
               <td style="padding: 10px 5px; color: #888; font-weight: 600;">🎓 Education</td>
               <td style="padding: 10px 5px; color: #333;">${applicant.education || '—'}</td>
             </tr>
+            ${applicant.joinType ? `<tr style="border-top: 2px solid #046957;">
+              <td style="padding: 10px 5px; color: #046957; font-weight: 700;">🔗 Join Type</td>
+              <td style="padding: 10px 5px; color: #046957; font-weight: 700;">${applicant.joinType}</td>
+            </tr>` : ''}
           </table>
           <div style="text-align: center; margin-top: 25px;">
             <a href="${siteUrl}/admin/approvals" style="display: inline-block; background: #046957; color: white; text-decoration: none; padding: 12px 35px; border-radius: 8px; font-weight: 700; font-size: 15px;">

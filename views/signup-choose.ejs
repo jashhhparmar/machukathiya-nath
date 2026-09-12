@@ -1,0 +1,171 @@
+<section class="banner-section text-white text-center py-4" style="background: linear-gradient(135deg, #02362c, #046957);">
+    <div class="container py-3">
+        <h1 class="fw-bold mb-1"><i class="fas fa-users me-2"></i>We Found Your Family!</h1>
+        <p class="mb-0 opacity-75">It looks like you might already be part of an existing family</p>
+    </div>
+</section>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <!-- Info Alert -->
+            <div class="alert border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #e8f5e9, #f1f8e9);">
+                <div class="d-flex align-items-start gap-3">
+                    <div>
+                        <i class="fas fa-info-circle fa-2x" style="color: #046957;"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1" style="color: #046957;">Hello, <%= applicantName %>!</h6>
+                        <p class="mb-0 small text-muted">
+                            We found a member profile matching your details in an existing family. 
+                            You can <strong>join that family</strong> to access the same vastipatrak, 
+                            or <strong>create your own new family</strong> with a separate vastipatrak number.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Matched Families -->
+            <h5 class="fw-bold mb-3" style="color: #046957;">
+                <i class="fas fa-link me-2"></i>Matching Family Records
+            </h5>
+
+            <% matches.forEach(function(match, index) { %>
+            <div class="card border-0 shadow-sm mb-4" style="border-radius: 12px; overflow: hidden;">
+                <!-- Card Header -->
+                <div class="card-header text-white py-3 border-0 d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #046957, #02362c);">
+                    <div>
+                        <h6 class="mb-0 fw-bold">
+                            <i class="fas fa-home me-2"></i><%= match.familyHead %>'s Family
+                        </h6>
+                    </div>
+                    <span class="badge bg-warning text-dark fw-bold px-3 py-2" style="border-radius: 20px;">
+                        VP #<%= String(match.familyVastipatrakNo).padStart(4, '0') %>
+                    </span>
+                </div>
+
+                <div class="card-body p-4">
+                    <!-- Family Info -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-sm-4">
+                            <div class="text-muted small text-uppercase fw-bold mb-1">Family Head</div>
+                            <div class="fw-semibold"><%= match.familyHead %></div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="text-muted small text-uppercase fw-bold mb-1">Village</div>
+                            <div class="fw-semibold"><%= match.familyVillage %></div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="text-muted small text-uppercase fw-bold mb-1">Total Members</div>
+                            <div class="fw-semibold"><%= match.familyTotalMembers %></div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Matching Member Info -->
+                    <h6 class="fw-bold text-muted mb-2"><i class="fas fa-user-check me-1 text-success"></i> Your Matching Profile</h6>
+                    <div class="row g-2 mb-3">
+                        <div class="col-sm-4">
+                            <div class="small text-muted">Name</div>
+                            <div class="fw-semibold"><%= match.memberName %></div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="small text-muted">Relation</div>
+                            <div class="fw-semibold"><%= match.memberRelation %></div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="small text-muted">Match Score</div>
+                            <div>
+                                <span class="badge bg-success fw-bold px-3 py-1"><%= match.score %>/<%= match.totalChecks %> criteria matched</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Join Button -->
+                    <form action="/signup-join" method="POST">
+                        <input type="hidden" name="memberId" value="<%= match.memberId %>">
+                        <input type="hidden" name="familyId" value="<%= match.familyId %>">
+                        <button type="submit" class="btn text-white fw-bold w-100 py-3" style="background: linear-gradient(135deg, #046957, #02362c); border-radius: 10px; font-size: 1.05rem;">
+                            <i class="fas fa-user-plus me-2"></i>Join This Family
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <% }); %>
+
+            <!-- Divider -->
+            <div class="text-center my-4">
+                <div class="d-flex align-items-center gap-3">
+                    <hr class="flex-grow-1">
+                    <span class="text-muted fw-bold text-uppercase small">OR</span>
+                    <hr class="flex-grow-1">
+                </div>
+            </div>
+
+            <!-- Create New Family Option -->
+            <div class="card border-0 shadow-sm" style="border-radius: 12px; overflow: hidden; border: 2px dashed #dee2e6 !important;">
+                <div class="card-body text-center p-4">
+                    <i class="fas fa-plus-circle fa-3x mb-3" style="color: #adb5bd;"></i>
+                    <h5 class="fw-bold text-dark mb-2">Create Your Own Family</h5>
+                    <p class="text-muted mb-3">
+                        Start a new Vastipatrak with a separate family record. 
+                        You'll get your own unique vastipatrak number.
+                    </p>
+                    <button type="button" class="btn btn-outline-secondary fw-bold px-5 py-2" style="border-radius: 10px;" onclick="showCreateNewWarning()">
+                        <i class="fas fa-home me-2"></i>Create New Family
+                    </button>
+                </div>
+            </div>
+
+            <!-- Back Link -->
+            <div class="text-center mt-4">
+                <a href="/signup" class="text-decoration-none" style="color: #046957;">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Signup
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Warning Modal for Creating New Family -->
+<div class="modal fade" id="createNewWarningModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow" style="border-radius: 12px;">
+      <div class="modal-header border-0 py-3" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
+        <h5 class="modal-title text-white fw-bold">
+          <i class="fas fa-exclamation-triangle me-2"></i>Already Part of a Family
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4 text-center">
+        <i class="fas fa-home fa-3x text-warning mb-3"></i>
+        <h6 class="fw-bold mb-2">You already have a matching profile in an existing family!</h6>
+        <p class="text-muted mb-0">
+          Creating a new family will give you a <strong>separate Vastipatrak number</strong>. 
+          Your existing family record will remain unchanged. 
+          Are you sure you want to proceed?
+        </p>
+      </div>
+      <div class="modal-footer border-0 d-flex justify-content-between">
+        <button type="button" class="btn btn-secondary fw-semibold px-4" data-bs-dismiss="modal">
+          <i class="fas fa-arrow-left me-1"></i> Go Back
+        </button>
+        <form action="/signup-create-new" method="POST" style="display: inline;">
+          <button type="submit" class="btn btn-warning fw-bold px-4 text-white">
+            <i class="fas fa-plus me-1"></i> Yes, Create New Family
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showCreateNewWarning() {
+  var modal = new bootstrap.Modal(document.getElementById('createNewWarningModal'));
+  modal.show();
+}
+</script>

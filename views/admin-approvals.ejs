@@ -234,7 +234,8 @@
                 <th class="small fw-bold text-muted text-uppercase">Email</th>
                 <th class="small fw-bold text-muted text-uppercase">Phone</th>
                 <th class="small fw-bold text-muted text-uppercase">Registered</th>
-                <th class="small fw-bold text-muted text-uppercase">Status</th>
+                <th class="small fw-bold text-muted text-uppercase">Role</th>
+                <th class="small fw-bold text-muted text-uppercase">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -244,7 +245,30 @@
                   <td class="small"><%= au.email %></td>
                   <td class="small"><%= au.phone || '—' %></td>
                   <td class="small text-muted"><%= new Date(au.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %></td>
-                  <td><span class="badge bg-success rounded-pill px-3"><i class="fas fa-check me-1"></i>Approved</span></td>
+                  <td>
+                    <% if (au.role === 'admin') { %>
+                      <span class="badge rounded-pill px-3 py-1" style="background-color: #046957;"><i class="fas fa-crown me-1"></i>Admin</span>
+                    <% } else { %>
+                      <span class="badge bg-secondary rounded-pill px-3 py-1"><i class="fas fa-user me-1"></i>Member</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <% if (au.role !== 'admin') { %>
+                      <form action="/admin/users/<%= au._id %>/make-admin" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-sm fw-semibold px-3" style="background-color: #046957; color: white; border-radius: 6px;" onclick="return confirm('Promote <%= au.fullName %> to Admin? They will have full admin access.')">
+                          <i class="fas fa-crown me-1"></i> Make Admin
+                        </button>
+                      </form>
+                    <% } else if (au._id.toString() !== user._id.toString()) { %>
+                      <form action="/admin/users/<%= au._id %>/remove-admin" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-outline-danger fw-semibold px-3" style="border-radius: 6px;" onclick="return confirm('Remove admin role from <%= au.fullName %>?')">
+                          <i class="fas fa-user-minus me-1"></i> Remove Admin
+                        </button>
+                      </form>
+                    <% } else { %>
+                      <span class="text-muted small"><i class="fas fa-lock me-1"></i>You</span>
+                    <% } %>
+                  </td>
                 </tr>
               <% }) %>
             </tbody>

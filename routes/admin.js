@@ -268,4 +268,51 @@ router.post('/admin/approvals/:userId/reject', requireAdmin, async (req, res) =>
   }
 });
 
+// ═══════════════════════════════════════════════════════════════
+// ADMIN ROLE MANAGEMENT
+// ═══════════════════════════════════════════════════════════════
+
+// POST /admin/users/:userId/make-admin — Promote user to admin
+router.post('/admin/users/:userId/make-admin', requireAdmin, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      req.session.errorMessage = 'User not found.';
+      return res.redirect('/admin/approvals');
+    }
+    user.role = 'admin';
+    await user.save();
+    req.session.successMessage = `${user.fullName} has been promoted to Admin.`;
+    res.redirect('/admin/approvals');
+  } catch (err) {
+    console.error(err);
+    req.session.errorMessage = 'Failed to promote user: ' + err.message;
+    res.redirect('/admin/approvals');
+  }
+});
+
+// POST /admin/users/:userId/remove-admin — Demote admin to member
+router.post('/admin/users/:userId/remove-admin', requireAdmin, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      req.session.errorMessage = 'User not found.';
+      return res.redirect('/admin/approvals');
+    }
+    // Prevent removing yourself from admin
+    if (user._id.toString() === req.session.userId) {
+      req.session.errorMessage = 'You cannot remove your own admin role.';
+      return res.redirect('/admin/approvals');
+    }
+    user.role = 'member';
+    await user.save();
+    req.session.successMessage = `${user.fullName} has been demoted to Member.`;
+    res.redirect('/admin/approvals');
+  } catch (err) {
+    console.error(err);
+    req.session.errorMessage = 'Failed to demote user: ' + err.message;
+    res.redirect('/admin/approvals');
+  }
+});
+
 module.exports = router;

@@ -21,6 +21,7 @@ const memberSchema = new mongoose.Schema({
     country: { type: String, default: 'India' }
   },
   profilePhoto: { type: String, default: '/images/no-profile.svg' },
+  linkedUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   createdAt:    { type: Date, default: Date.now }
 });
 
