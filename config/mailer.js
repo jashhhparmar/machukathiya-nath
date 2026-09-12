@@ -258,4 +258,50 @@ async function sendRejectionEmail(userEmail, userName, reason) {
   return _sendViaBrevo(emailData);
 }
 
-module.exports = { sendOTPEmail, sendAdminNotificationEmail, sendApprovalEmail, sendRejectionEmail };
+/**
+ * Send email to user confirming their registration is pending
+ * @param {string} userEmail - User's email
+ * @param {string} userName - User's full name
+ */
+async function sendPendingNotificationEmail(userEmail, userName) {
+  console.log('[MAILER] Sending pending notification email to:', userEmail);
+
+  const emailData = {
+    sender: {
+      name: 'Machhu Kathiya Gyati',
+      email: process.env.BREVO_SENDER_EMAIL || 'noreply@machhu-kathiya-gyati.com'
+    },
+    to: [{ email: userEmail }],
+    subject: 'Registration Pending Approval — Machhu Kathiya Sai Suthar Gyati',
+    htmlContent: `
+      <div style="font-family: 'Nunito', Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 30px; background: #f8f9fa; border-radius: 12px;">
+        <div style="text-align: center; margin-bottom: 25px;">
+          <h2 style="color: #046957; margin: 0;">Machhu Kathiya Sai Suthar Gyati</h2>
+          <p style="color: #888; font-size: 14px; margin-top: 5px;">Registration Received</p>
+        </div>
+        <div style="background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+          <p style="color: #333; font-size: 15px; margin-bottom: 10px;">
+            Hello ${userName},
+          </p>
+          <p style="color: #333; font-size: 15px; margin-bottom: 15px;">
+            We have successfully received your registration request for the Machhu Kathiya Sai Suthar Gyati portal.
+          </p>
+          <p style="color: #333; font-size: 15px; margin-bottom: 15px;">
+            Your account is currently <strong>pending approval</strong> by the admin. 
+            Once the admin verifies your details and approves your account, you will receive another email and you will be able to log in.
+          </p>
+          <p style="color: #666; font-size: 14px; margin-top: 20px;">
+            Thank you for your patience!
+          </p>
+        </div>
+        <p style="color: #999; font-size: 12px; text-align: center; margin-top: 20px;">
+          Machhu Kathiya Sai Suthar Gyati
+        </p>
+      </div>
+    `
+  };
+
+  return _sendViaBrevo(emailData);
+}
+
+module.exports = { sendOTPEmail, sendAdminNotificationEmail, sendApprovalEmail, sendRejectionEmail, sendPendingNotificationEmail };

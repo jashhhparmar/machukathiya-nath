@@ -6,7 +6,7 @@ const crypto = require('crypto');
 const User = require('../models/User');
 const Family = require('../models/Family');
 const Member = require('../models/Member');
-const { sendOTPEmail, sendAdminNotificationEmail } = require('../config/mailer');
+const { sendOTPEmail, sendAdminNotificationEmail, sendPendingNotificationEmail } = require('../config/mailer');
 
 // GET /signup
 router.get('/signup', (req, res) => {
@@ -236,7 +236,7 @@ router.post('/terms-and-conditions', async (req, res) => {
       return res.redirect('/dashboard');
     }
 
-    // 8. Send email notification to admin
+    // 8. Send email notifications
     try {
       const adminEmail = process.env.ADMIN_EMAIL;
       if (adminEmail) {
@@ -245,8 +245,12 @@ router.post('/terms-and-conditions', async (req, res) => {
           gender, maritalStatus, occupation, education
         });
       }
+      
+      if (email) {
+        await sendPendingNotificationEmail(email, fullName);
+      }
     } catch (emailErr) {
-      console.error('[SIGNUP] Failed to send admin notification email:', emailErr.message);
+      console.error('[SIGNUP] Failed to send notification emails:', emailErr.message);
     }
 
     // 9. Redirect to pending approval page
@@ -327,7 +331,7 @@ router.post('/signup-join', async (req, res) => {
     delete req.session.pendingSignup;
     delete req.session.familyMatches;
 
-    // Send admin notification
+    // Send email notifications
     try {
       const adminEmail = process.env.ADMIN_EMAIL;
       if (adminEmail) {
@@ -342,8 +346,12 @@ router.post('/signup-join', async (req, res) => {
           joinType: `Joining ${family.familyHead}'s family (VP #${String(family.vastipatrakNo).padStart(4, '0')})`
         });
       }
+      
+      if (email) {
+        await sendPendingNotificationEmail(email, fullName);
+      }
     } catch (emailErr) {
-      console.error('[SIGNUP-JOIN] Failed to send admin notification email:', emailErr.message);
+      console.error('[SIGNUP-JOIN] Failed to send notification emails:', emailErr.message);
     }
 
     res.render('signup-pending', {
