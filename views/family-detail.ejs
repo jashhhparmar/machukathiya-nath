@@ -67,8 +67,8 @@
         </div>
     </div>
 
-    <!-- Add Member Button (only for family owner or admin) -->
-    <% if ((locals.user && family.createdBy && family.createdBy.toString() === user._id.toString()) || locals.isAdmin) { %>
+    <!-- Add Member Button (for family owner, family members, or admin) -->
+    <% if (locals.isFamilyMember || locals.isAdmin) { %>
     <div class="mb-4 text-end">
       <a href="/family/<%= family._id %>/add-member" class="btn text-white fw-semibold px-4" style="background-color:#046957; border-radius:8px;">
         <i class="fas fa-user-plus me-2"></i> Add Family Member
@@ -144,16 +144,33 @@
                             </div>
                         </div>
                         
-                        <!-- Action Buttons (Edit + Delete for family owner or admin) -->
-                        <% if ((locals.user && family.createdBy && family.createdBy.toString() === user._id.toString()) || locals.isAdmin) { %>
-                        <div class="card-footer bg-light border-top p-2 text-center d-flex justify-content-center gap-2">
+                        <!-- Action Buttons -->
+                        <% 
+                          const canOwnerEdit = (locals.user && family.createdBy && family.createdBy.toString() === user._id.toString());
+                          const canFamilyEdit = locals.isFamilyMember;
+                          const canAdminEdit = locals.isAdmin;
+                          const canEdit = canOwnerEdit || canFamilyEdit || canAdminEdit;
+                          const canDelete = canOwnerEdit || canAdminEdit;
+                          const canMakeHead = canFamilyEdit || canAdminEdit;
+                        %>
+                        <% if (canEdit) { %>
+                        <div class="card-footer bg-light border-top p-2 text-center d-flex flex-wrap justify-content-center gap-2">
                             <a href="/family/<%= family._id %>/member/<%= member._id %>/edit" class="btn btn-sm fw-semibold px-3" style="background-color: #046957; color: white; border-radius: 6px;">
                                 <i class="fas fa-edit me-1"></i> Edit
                             </a>
+                            <% if (canMakeHead && member.relation !== 'SELF') { %>
+                            <form action="/family/<%= family._id %>/member/<%= member._id %>/make-head" method="POST" class="d-inline">
+                              <button type="submit" class="btn btn-sm btn-warning fw-semibold px-3" style="border-radius: 6px;" onclick="return confirm('Make <%= member.fullName %> the Family Head? The current head will lose their SELF status.')">
+                                <i class="fas fa-crown me-1"></i> Make Head
+                              </button>
+                            </form>
+                            <% } %>
+                            <% if (canDelete && member.relation !== 'SELF') { %>
                             <button type="button" class="btn btn-sm btn-outline-danger fw-semibold px-3" style="border-radius: 6px;"
                                 onclick="showDeleteMemberModal('<%= member._id %>', '<%= member.fullName %>', '<%= family._id %>', '<%= member.relation %>')">
                                 <i class="fas fa-trash-alt me-1"></i> Delete
                             </button>
+                            <% } %>
                         </div>
                         <% } %>
                     </div>

@@ -67,6 +67,14 @@
               <input type="text" name="phone" class="form-control" value="<%= locals.data && data.phone ? data.phone : '' %>">
             </div>
           </div>
+
+          <div class="col-12">
+            <label class="form-label fw-semibold text-muted small">Email <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light"><i class="fas fa-envelope text-secondary"></i></span>
+              <input type="email" name="email" class="form-control" required value="<%= locals.data && data.email ? data.email : '' %>" placeholder="member@example.com">
+            </div>
+          </div>
         </div>
 
         <hr class="my-3">

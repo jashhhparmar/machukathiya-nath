@@ -240,8 +240,13 @@
             </thead>
             <tbody>
               <% approvedUsers.forEach(function(au) { %>
-                <tr>
-                  <td class="fw-bold"><%= au.fullName %></td>
+                <tr<%= au.inVastipatrak ? '' : ' style="background-color: #fff5f5;"' %>>
+                  <td class="fw-bold">
+                    <%= au.fullName %>
+                    <% if (!au.inVastipatrak) { %>
+                      <br><span class="badge bg-danger bg-opacity-75 mt-1" style="font-size: 0.65rem;"><i class="fas fa-exclamation-triangle me-1"></i>Not in Vastipatrak</span>
+                    <% } %>
+                  </td>
                   <td class="small"><%= au.email %></td>
                   <td class="small"><%= au.phone || '—' %></td>
                   <td class="small text-muted"><%= new Date(au.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %></td>
@@ -253,12 +258,14 @@
                     <% } %>
                   </td>
                   <td>
-                    <% if (au.role !== 'admin') { %>
+                    <% if (au.role !== 'admin' && au.inVastipatrak) { %>
                       <form action="/admin/users/<%= au._id %>/make-admin" method="POST" class="d-inline">
                         <button type="submit" class="btn btn-sm fw-semibold px-3" style="background-color: #046957; color: white; border-radius: 6px;" onclick="return confirm('Promote <%= au.fullName %> to Admin? They will have full admin access.')">
                           <i class="fas fa-crown me-1"></i> Make Admin
                         </button>
                       </form>
+                    <% } else if (au.role !== 'admin' && !au.inVastipatrak) { %>
+                      <span class="text-danger small fw-semibold"><i class="fas fa-ban me-1"></i>Removed</span>
                     <% } else if (au._id.toString() !== user._id.toString()) { %>
                       <form action="/admin/users/<%= au._id %>/remove-admin" method="POST" class="d-inline">
                         <button type="submit" class="btn btn-sm btn-outline-danger fw-semibold px-3" style="border-radius: 6px;" onclick="return confirm('Remove admin role from <%= au.fullName %>?')">

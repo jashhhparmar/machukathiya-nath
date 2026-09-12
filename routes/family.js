@@ -23,15 +23,18 @@ router.get('/family/:id', requireLogin, async (req, res) => {
       return valA - valB;
     });
 
-    // Check if current user is admin
+    // Check if current user is admin or family member
     const currentUser = await User.findById(req.session.userId).lean();
     const isAdmin = currentUser && currentUser.role === 'admin';
+    const isFamilyMember = currentUser && currentUser.linkedFamily && currentUser.linkedFamily.toString() === family._id.toString();
+    const isOwner = family.createdBy && family.createdBy.toString() === req.session.userId.toString();
 
     res.render('family-detail', {
       title: `Family Details - ${family.familyHead}`,
       family,
       members,
       isAdmin,
+      isFamilyMember: isFamilyMember || isOwner,
       success: req.session.successMessage || null,
       error: req.session.errorMessage || null
     });

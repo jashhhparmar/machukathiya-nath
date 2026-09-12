@@ -9,6 +9,7 @@ const memberSchema = new mongoose.Schema({
   dateOfBirth:    { type: Date },
   bloodGroup:     { type: String, enum: ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-', ''] },
   phone:          { type: String },
+  email:          { type: String, lowercase: true, trim: true },
   occupation:     { type: String },
   education:      { type: String },
   membershipType: { type: String },

@@ -111,6 +111,17 @@ router.post('/admin/family/:id/delete', requireAdmin, async (req, res) => {
       return res.redirect('/vastipatrak');
     }
 
+    // ── REVOKE ACCESS for all linked users in this family ──
+    const membersWithUsers = await Member.find({ family: family._id, linkedUser: { $ne: null } }).lean();
+    for (const m of membersWithUsers) {
+      await User.findByIdAndUpdate(m.linkedUser, {
+        approvalStatus: 'rejected',
+        rejectionReason: 'Family deleted from Vastipatrak by admin.',
+        linkedFamily: null,
+        linkedMember: null
+      });
+    }
+
     // Delete all members belonging to this family
     await Member.deleteMany({ family: family._id });
 
@@ -148,6 +159,16 @@ router.post('/admin/family/:id/member/:memberId/delete', requireAdmin, async (re
       return res.redirect(`/family/${family._id}`);
     }
 
+    // ── REVOKE ACCESS if member has a linked User account ──
+    if (member.linkedUser) {
+      await User.findByIdAndUpdate(member.linkedUser, {
+        approvalStatus: 'rejected',
+        rejectionReason: 'Removed from Vastipatrak by admin.',
+        linkedFamily: null,
+        linkedMember: null
+      });
+    }
+
     await Member.findByIdAndDelete(member._id);
 
     // Decrement totalMembers on the family
@@ -170,10 +191,25 @@ const { sendApprovalEmail, sendRejectionEmail } = require('../config/mailer');
 // GET /admin/approvals — show pending, approved, rejected users
 router.get('/admin/approvals', requireAdmin, async (req, res) => {
   try {
-    // Get all non-admin users grouped by approval status
+    // Get all users grouped by approval status
     const pendingUserDocs = await User.find({ approvalStatus: 'pending', role: { $ne: 'admin' } }).sort({ createdAt: -1 }).lean();
-    const approvedUsers = await User.find({ approvalStatus: 'approved', role: { $ne: 'admin' } }).sort({ createdAt: -1 }).lean();
-    const rejectedUsers = await User.find({ approvalStatus: 'rejected', role: { $ne: 'admin' } }).sort({ createdAt: -1 }).lean();
+    const approvedUserDocs = await User.find({ approvalStatus: 'approved' }).sort({ createdAt: -1 }).lean();
+    const rejectedUsers = await User.find({ approvalStatus: 'rejected' }).sort({ createdAt: -1 }).lean();
+
+    // For approved users, check if their linked member still exists in Vastipatrak
+    const approvedUsers = [];
+    for (const au of approvedUserDocs) {
+      let inVastipatrak = false;
+      if (au.linkedMember) {
+        const memberExists = await Member.findById(au.linkedMember).lean();
+        inVastipatrak = !!memberExists;
+      } else {
+        // Check by createdBy (old users without linkedMember)
+        const familyExists = await Family.findOne({ createdBy: au._id }).lean();
+        inVastipatrak = !!familyExists;
+      }
+      approvedUsers.push({ ...au, inVastipatrak });
+    }
 
     // For pending users, also fetch their family + member data
     const pendingUsers = [];

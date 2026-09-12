@@ -49,8 +49,18 @@ router.post('/signup', [
     req.session.pendingSignup = req.body;
 
     // ── MATCHING ALGORITHM: Check if this person exists in any family ──
+    // Search by name OR by email (email match = strong signal)
     const nameRegex = new RegExp('^' + req.body.fullName.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
-    const matchingMembers = await Member.find({ fullName: nameRegex }).populate('family').lean();
+    const emailLower = req.body.email ? req.body.email.toLowerCase().trim() : '';
+    
+    let matchingMembers;
+    if (emailLower) {
+      matchingMembers = await Member.find({
+        $or: [{ fullName: nameRegex }, { email: emailLower }]
+      }).populate('family').lean();
+    } else {
+      matchingMembers = await Member.find({ fullName: nameRegex }).populate('family').lean();
+    }
 
     const qualifiedMatches = [];
     for (const member of matchingMembers) {
@@ -58,8 +68,12 @@ router.post('/signup', [
       if (member.linkedUser) continue;
 
       let score = 0;
-      const totalChecks = 4;
+      const totalChecks = 5;
 
+      // Check email match (strong signal)
+      if (emailLower && member.email && emailLower === member.email.toLowerCase().trim()) {
+        score += 2; // Email match counts double
+      }
       // Check phone match
       if (req.body.phone && member.phone && req.body.phone.replace(/\s/g, '') === member.phone.replace(/\s/g, '')) {
         score++;
@@ -81,12 +95,12 @@ router.post('/signup', [
         }
       }
 
-      // Need at least 2/4 matches
+      // Need at least 2/5 matches (email match alone = 2 = qualifies)
       if (score >= 2) {
         qualifiedMatches.push({
           member,
           family: member.family,
-          score,
+          score: Math.min(score, totalChecks),
           totalChecks
         });
       }
@@ -190,6 +204,7 @@ router.post('/terms-and-conditions', async (req, res) => {
       dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
       bloodGroup: bloodGroup || '',
       phone,
+      email: email ? email.toLowerCase().trim() : '',
       occupation: occupation ? occupation.toUpperCase() : '',
       education: education || '',
       membershipType: 'Life Member',
